@@ -1,0 +1,42 @@
+
+=head1 NAME
+
+Alien::FLTK::Todo - TODO list for Perl module Alien::FLTK
+
+=head1 High priorities
+
+=over
+
+=item * None yet.
+
+=back
+
+=head1 Short term goals
+
+=over
+
+=item * None yet.
+
+=back
+
+=head1 Long term goals
+
+=over
+
+=item * None yet.
+
+=back
+
+=head1 Author
+
+Sanko Robinson <sanko@cpan.org> - http://sankorobinson.com/
+
+CPAN ID: SANKO
+
+=head1 License and Legal
+
+Copyright (C) 2009 by Sanko Robinson E<lt>sanko@cpan.orgE<gt>
+
+=for git $Id: TODO.pod eb7c1c0 2009-10-25 14:42:59Z sanko@cpan.org $ for got=
+
+=cut
