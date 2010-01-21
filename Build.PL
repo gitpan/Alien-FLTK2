@@ -202,10 +202,10 @@ $mb->notes(
     }
 );
 ############################################################## Get to work ###
-#for my $action (qw[fetch_fltk extract_fltk configure_fltk write_config_h]) {
-#    $mb->depends_on($action);
-#    $mb->dispatch('check_errors');
-#}
+for my $action (qw[fetch_fltk extract_fltk configure_fltk write_config_h]) {
+    $mb->depends_on($action);
+    $mb->dispatch('check_errors');
+}
 $mb->create_build_script;
 ##############################################################################
 exit 0;
