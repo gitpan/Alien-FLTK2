@@ -3,13 +3,14 @@ package Alien::FLTK2;
     use strict;
     use warnings;
     use File::Spec::Functions qw[catdir rel2abs canonpath];
-    our $BASE = 0; our $SVN = 6970; our $DEV = 6; our $VERSION = sprintf('%d.%05d' . ($DEV ? '_%03d' : ''), $BASE, $SVN, $DEV);
+    our $BASE = 0; our $SVN = 6970; our $DEV = 7; our $VERSION = sprintf('%d.%05d' . ($DEV ? '_%03d' : ''), $BASE, $SVN, $DEV);
 
     sub _md5 {
         return {gz  => '8159cabebbd1b5b774b277827aa4e030',
                 bz2 => 'f78976d0ba1a5c845e14f4df96d580a0'
         };
     }
+    sub _unique_file { return 'src/Widget.cxx' }
 
     sub new {
         my ($class, $overrides) = @_;    # XXX - overrides are unsupported

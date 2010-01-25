@@ -1,6 +1,6 @@
 ---
 name: Alien-FLTK2
-version: 0.06970_006
+version: 0.06970_007
 author:
   - 'Sanko Robinson <sanko@cpan.org>'
 abstract: Build and use the Fast Light Toolkit binaries
@@ -54,7 +54,7 @@ configure_requires:
 provides:
   Alien::FLTK2:
     file: lib/Alien/FLTK2.pm
-    version: 0.06970_006
+    version: 0.06970_007
 no_index:
   directory:
     - t

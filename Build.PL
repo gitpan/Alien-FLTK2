@@ -76,12 +76,11 @@ my $mb = $class->new(
         keywords =>
             [qw[Alien FLTK Fast Light Toolkit widget FL GUI UI window 2.0.x]],
         resources => {
-              bugtracker => 'http://github.com/sanko/alien-fltk2/issues',
-              ChangeLog =>
-                  'http://github.com/sanko/alien-fltk2/commits/master',
-              homepage => 'http://sanko.github.com/fltk-perl/',
-              license => 'http://www.perlfoundation.org/artistic_license_2_0',
-              repository => 'http://github.com/sanko/alien-fltk2'
+            bugtracker => 'http://github.com/sanko/alien-fltk2/issues',
+            ChangeLog => 'http://github.com/sanko/alien-fltk2/commits/master',
+            homepage  => 'http://sanko.github.com/fltk-perl/',
+            license   => 'http://www.perlfoundation.org/artistic_license_2_0',
+            repository => 'http://github.com/sanko/alien-fltk2'
         }
     },
     needs_compiler => 1,        # adds ExtUtils::CBuilder to build_requires
@@ -100,7 +99,7 @@ $mb->notes(gmtime            => scalar gmtime);
 $mb->notes(threads           => $Config{'useithreads'} ? 1 : 0);
 $mb->notes(snapshot_dir => 'working/snapshot/');    # archive location
 $mb->notes(extract_dir  => 'working/extract/');     # extracted source
-$mb->notes(config_yml =>  'share/config.yml');
+$mb->notes(config_yml   => 'share/config.yml');
 #################################### 'Dynamic' values used by build system ###
 $mb->notes(svn => $mb->dist_version =~ m[\.0*(\d+)]);
 $mb->notes(branch                     => '2.0.x');

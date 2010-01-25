@@ -815,12 +815,24 @@ END
         require Archive::Extract;
         $args{'from'} ||= $self->notes('snapshot_path');
         $args{'to'}   ||= _abs($self->notes('extract_dir'));
-        if (-d _abs($args{'to'} . sprintf '/fltk-%s-r%d',
-                    $self->notes('branch'),
-                    $self->notes('svn')
-            )
+        unshift @INC, _abs(_path($self->base_dir, 'lib'));
+        my $_extracted;
+        if (eval 'require ' . $self->module_name) {
+            my $unique_file = $self->module_name->_unique_file;
+            $_extracted = -f _abs($args{'to'} . sprintf '/fltk-%s-r%d/%s',
+                                  $self->notes('branch'),
+                                  $self->notes('svn'),
+                                  $unique_file
+            ) ? 1 : 0;
+        }
+        elsif (-d _abs($args{'to'} . sprintf '/fltk-%s-r%d',
+                       $self->notes('branch'),
+                       $self->notes('svn')
+               )
             )
         {   $self->notes('extract' => $args{'to'});
+            $_extracted = 1;
+            last;
             return 1;    # XXX - what should we do?!?
             require File::Path;
             printf "Removing existing directory...\n", $args{'to'};
@@ -830,23 +842,24 @@ END
                                     )
             );
         }
-        my $ae = Archive::Extract->new(archive => $args{'from'});
-        printf 'Extracting %s to %s... ', _rel($args{'from'}),
-            _rel($args{'to'});
-        my $okay = $ae->extract(to => $args{'to'});
-        if (!$okay) {
-            push @{$self->notes('errors')},
-                {stage   => 'fltk source extraction',
-                 fatal   => 1,
-                 message => $ae->error
-                };
-            return;
+        if (!$_extracted) {
+            my $ae = Archive::Extract->new(archive => $args{'from'});
+            printf 'Extracting %s to %s... ', _rel($args{'from'}),
+                _rel($args{'to'});
+            if (!$ae->extract(to => $args{'to'})) {
+                push @{$self->notes('errors')},
+                    {stage   => 'fltk source extraction',
+                     fatal   => 1,
+                     message => $ae->error
+                    };
+                $self->dispatch('check_errors');
+                return 0;
+            }
+            $self->add_to_cleanup($ae->extract_path);
+            print "done.\n";
         }
         $self->notes('extract'       => $args{'to'});
-        $self->notes('snapshot_path' => $args{'from'})
-            ;    # If used from commandline
-        $self->add_to_cleanup($ae->extract_path);
-        print "done.\n";
+        $self->notes('snapshot_path' => $args{'from'});
         return 1;
     }
 
@@ -924,14 +937,13 @@ END
             }
         }
         {
-            require Module::Build::YAML
-                ;    # Once installed, the module uses YAML::Tiny;
+            require Module::Build::YAML;
             printf 'Updating %s config... ', $self->module_name;
-            my $me        = $self->notes('config_yml');
+            my $me        = _abs($self->notes('config_yml'));
             my $mode_orig = 0644;
             if (!-d _dir($me)) {
                 require File::Path;
-                File::Path::make_path(_dir($me));
+                File::Path::make_path(_dir($me), {verbose => 1});
             }
             elsif (-d $me) {
                 $mode_orig = (stat $me)[2] & 07777;
@@ -939,7 +951,8 @@ END
             }
             Module::Build::YAML->DumpFile($me, \%{$self->notes()});
             chmod($mode_orig, $me)
-                or printf 'Cannot restore permissions on %s: %s', $me, $!;
+                || exit !printf 'Cannot restore permissions on %s: %s', $me,
+                $!;
             print "okay\n";
         }
         if (!chdir $self->base_dir()) {
