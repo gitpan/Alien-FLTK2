@@ -1,7 +1,16 @@
 ---
-abstract: 'Build and use the Fast Light Toolkit binaries'
+name: Alien-FLTK2
+version: 0.06970_006
 author:
   - 'Sanko Robinson <sanko@cpan.org>'
+abstract: Build and use the Fast Light Toolkit binaries
+license: artistic_2
+resources:
+  ChangeLog: http://github.com/sanko/alien-fltk2/commits/master
+  bugtracker: http://github.com/sanko/alien-fltk2/issues
+  homepage: http://sanko.github.com/fltk-perl/
+  license: http://www.perlfoundation.org/artistic_license_2_0
+  repository: http://github.com/sanko/alien-fltk2
 build_requires:
   Archive::Extract: 0
   Carp: 0
@@ -21,9 +30,41 @@ build_requires:
   YAML::Tiny: 0
   base: 0
   perl: 5.008
-configure_requires:
+requires:
+  Archive::Extract: 0
+  Carp: 0
+  Config: 0
+  Cwd: 0
+  Digest::MD5: 0
+  ExtUtils::CBuilder: 0.27
+  File::Basename: 0
+  File::Fetch: 0
+  File::Find: 0
+  File::Path: 2.07
+  File::ShareDir: 0
+  File::Spec: 0
+  File::Temp: 0
   Module::Build: 0.36
+  Test::More: 0.88
+  YAML::Tiny: 0
+  base: 0
+  perl: 5.008
+configure_requires:
+  Module::Build: 0.35
+provides:
+  Alien::FLTK2:
+    file: lib/Alien/FLTK2.pm
+    version: 0.06970_006
+no_index:
+  directory:
+    - t
+    - example
+    - inc
+    - share
 generated_by: 'Conversion, software version 7.0'
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: 1.4
 keywords:
   - Alien
   - FLTK
@@ -36,44 +77,3 @@ keywords:
   - UI
   - window
   - 2.0.x
-license: artistic_2
-meta-spec:
-  url: http://module-build.sourceforge.net/META-spec-v1.4.html
-  version: 1.4
-name: Alien-FLTK2
-no_index:
-  directory:
-    - t
-    - example
-    - inc
-    - share
-provides:
-  Alien::FLTK2:
-    file: lib/Alien/FLTK2.pm
-    version: 0.06970_005
-requires:
-  Archive::Extract: 0
-  Carp: 0
-  Config: 0
-  Cwd: 0
-  Digest::MD5: 0
-  ExtUtils::CBuilder: 0.27
-  File::Basename: 0
-  File::Fetch: 0
-  File::Find: 0
-  File::Path: 2.07
-  File::ShareDir: 1.00
-  File::Spec: 0
-  File::Temp: 0
-  Module::Build: 0.36
-  Test::More: 0.88
-  YAML::Tiny: 0
-  base: 0
-  perl: 5.008
-resources:
-  ChangeLog: http://github.com/sanko/alien-fltk2/commits/master
-  bugtracker: http://github.com/sanko/alien-fltk2/issues
-  homepage: http://sanko.github.com/fltk-perl/
-  license: http://www.perlfoundation.org/artistic_license_2_0
-  repository: http://github.com/sanko/alien-fltk2
-version: 0.06970_005
