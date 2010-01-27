@@ -33,11 +33,11 @@ package inc::MBX::Alien::FLTK::Platform::Windows;
             print 'Testing GL Support... ';
             if (!$self->assert_lib({lib => 'opengl32', header => 'GL/gl.h'}))
             {   print "not okay\n";
-                push @{$self->notes('errors')},
-                    {stage   => 'configure',
-                     fatal   => 0,
-                     message => 'OpenGL libs were not found'
-                    };
+                $self->_error({stage   => 'configure',
+                               fatal   => 0,
+                               message => 'OpenGL libs were not found'
+                              }
+                );
                 last GL;
             }
             print "okay\n";
@@ -47,11 +47,11 @@ package inc::MBX::Alien::FLTK::Platform::Windows;
             print 'Testing GLU Support... ';
             if (!$self->assert_lib({lib => 'glu32', header => 'GL/glu.h'})) {
                 print "not okay\n";
-                push @{$self->notes('errors')},
-                    {stage   => 'configure',
-                     fatal   => 0,
-                     message => 'OpenGLU32 libs were not found'
-                    };
+                $self->_error({stage   => 'configure',
+                               fatal   => 0,
+                               message => 'OpenGLU32 libs were not found'
+                              }
+                );
                 last GL;
             }
             else {

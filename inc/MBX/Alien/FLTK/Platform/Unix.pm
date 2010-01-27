@@ -59,10 +59,9 @@ package inc::MBX::Alien::FLTK::Platform::Unix;
                     }
                 }
                 if (!$self->notes('can_has_x11')) {
-                    push @{$self->notes('errors')},
-                        {stage   => 'configure',
-                         fatal   => 1,
-                         message => <<'' }; return 0;
+                    $self->_error({stage   => 'configure',
+                                   fatal   => 1,
+                                   message => <<'' });
 Failed to find the X11 libs. You probably need to install the X11 development
 package first. On Debian Linux, these are the packages libx11-dev and x-dev.
 If I'm just missing something... patches welcome.
@@ -77,12 +76,11 @@ If I'm just missing something... patches welcome.
                 for my $incdir ($self->_x11_()) {
                     my $libdir = $incdir;
                     $libdir =~ s|include|lib|;
-                    if ($self->assert_lib(
-                                        {lib     => 'Xcursor',
-                                         libpath => $libdir,
-                                         header  => 'X11/Xcursor/Xcursor.h',
-                                         incpath => $incdir
-                                        }
+                    if ($self->assert_lib({lib     => 'X11/Xcursor',
+                                           libpath => $libdir,
+                                           header  => 'Xcursor/Xcursor.h',
+                                           incpath => $incdir
+                                          }
                         )
                         )
                     {   $self->notes('include_dirs')->{_abs($incdir)}++;
@@ -94,10 +92,9 @@ If I'm just missing something... patches welcome.
                     }
                 }
                 if (!$self->notes('define')->{'USE_XCURSOR'}) {
-                    push @{$self->notes('errors')},
-                        {stage   => 'configure',
-                         fatal   => 0,
-                         message => <<'' };
+                    $self->_error({stage   => 'configure',
+                                   fatal   => 0,
+                                   message => <<'' });
 Failed to find the XCursor libs. You probably need to install the X11
 development package first. On Debian Linux, these are the packages libx11-dev,
 x-dev, and libxcursor-dev. If I'm just missing something... patches welcome.
@@ -131,10 +128,9 @@ x-dev, and libxcursor-dev. If I'm just missing something... patches welcome.
                     }
                 }
                 if (!$Xi_okay) {
-                    push @{$self->notes('errors')},
-                        {stage   => 'configure',
-                         fatal   => 1,
-                         message => <<'' }; return 0;
+                    $self->_error({stage   => 'configure',
+                                   fatal   => 1,
+                                   message => <<'' });
 Failed to find the XInput Extension. You probably need to install the XInput
 Extension development package first. On Debian Linux, this is the libxi-dev
 package. If I'm just missing something... patches welcome.
@@ -160,13 +156,13 @@ package. If I'm just missing something... patches welcome.
                 }
             }
             if (!$GL_LIB) {
-                push @{$self->notes('errors')},
-                    {
-                    stage => 'configure',
-                    fatal => 0,
-                    message =>
-                        'OpenGL libs were not found (tried both GL and MesaGL)'
-                    };
+                $self->_error(
+                    {stage => 'configure',
+                     fatal => 0,
+                     message =>
+                         'OpenGL libs were not found (tried both GL and MesaGL)'
+                    }
+                );
             }
             if ($GL_LIB && $self->notes('define')->{'HAVE_GL_GLU_H'}) {
                 print 'Checking for GL/glu.h... ';
@@ -189,39 +185,28 @@ package. If I'm just missing something... patches welcome.
 
     sub _x11_ {    # Common directories for X headers. Check X11 before X11R\d
         return     # because it is often a symlink to the current release.
-            split m[\s+], <<'' }
-/usr/X11/include
-/usr/X11R7/include
-/usr/X11R6/include
-/usr/X11R5/include
-/usr/X11R4/include
-/usr/include/X11
-/usr/include/X11R7
-/usr/include/X11R6
-/usr/include/X11R5
-/usr/include/X11R4
-/usr/local/X11/include
-/usr/local/X11R7/include
-/usr/local/X11R6/include
-/usr/local/X11R5/include
-/usr/local/X11R4/include
-/usr/local/include/X11
-/usr/local/include/X11R7
-/usr/local/include/X11R6
-/usr/local/include/X11R5
-/usr/local/include/X11R4
-/usr/X386/include
-/usr/x386/include
-/usr/XFree86/include/X11
-/usr/include
-/usr/local/include
-/usr/unsupported/include
-/usr/athena/include
-/usr/local/x11r5/include
-/usr/lpp/Xamples/include
-/usr/openwin/include
-/usr/openwin/share/include
-
+            qw[
+            /usr/X11/include
+            /usr/X11R7/include          /usr/X11R6/include
+            /usr/X11R5/include          /usr/X11R4/include
+            /usr/include
+            /usr/include/X11R7          /usr/include/X11R6
+            /usr/include/X11R5          /usr/include/X11R4
+            /usr/local/X11/include
+            /usr/local/X11R7/include    /usr/local/X11R6/include
+            /usr/local/X11R5/include    /usr/local/X11R4/include
+            /usr/local/include
+            /usr/local/include/X11R7    /usr/local/include/X11R6
+            /usr/local/include/X11R5    /usr/local/include/X11R4
+            /usr/X386/include           /usr/x386/include
+            /usr/XFree86/include
+            /usr/include                /usr/local/include
+            /usr/unsupported/include
+            /usr/athena/include
+            /usr/local/x11r5/include
+            /usr/lpp/Xamples/include
+            /usr/openwin/include        /usr/openwin/share/include   ];
+    }
     1;
 }
 

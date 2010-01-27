@@ -120,6 +120,7 @@ package inc::MBX::Alien::FLTK::Base;
     sub ACTION_copy_headers {
         my ($self) = @_;
         $self->depends_on('write_config_h');
+        $self->depends_on('write_config_yml');
         my $headers_location
             = _path($self->fltk_dir(), $self->notes('headers_path'));
         my $headers_share = _path($self->base_dir(), qw[share include]);
@@ -638,16 +639,27 @@ int main ( ) {
     # Module::Build actions
     sub ACTION_fetch_fltk {
         my ($self, %args) = @_;
+        $args{'to'} = _abs(
+            defined $args{'to'} ? $args{'to'} : $self->notes('snapshot_dir'));
+        $args{'ext'}    ||= [qw[gz bz2]];
+        $args{'scheme'} ||= [qw[http ftp]];
+        {
+            my ($file) = grep {-f} map {
+                _abs(sprintf '%s/fltk-%s-r%d.tar.%s',
+                     $args{'to'}, $self->notes('branch'),
+                     $self->notes('svn'), $_)
+            } @{$args{'ext'}};
+            if (defined $file) {
+                $self->notes('snapshot_path' => $file);
+                $self->notes('snapshot_dir'  => $args{'to'});
+                return $self->depends_on('verify_snapshot');
+            }
+        }
         require File::Fetch;
-
-        #
         $File::Fetch::TIMEOUT = $File::Fetch::TIMEOUT = 45;    # Be quick
-        $args{'to'} ||= _abs($self->notes('snapshot_dir'));
-
-        #
         printf "Fetching SVN snapshot %d... ", $self->notes('svn');
         my ($schemes, $exts, %mirrors)
-            = ([qw[http ftp]], [qw[gz bz2]], _snapshot_mirrors());
+            = ($args{'scheme'}, $args{'ext'}, _snapshot_mirrors());
         my ($attempt, $total)
             = (0, scalar(@$schemes) * scalar(@$exts) * scalar(keys %mirrors));
         my $mirrors = [keys %mirrors];
@@ -661,25 +673,6 @@ int main ( ) {
         my ($dir, $archive, $extention);
     MIRROR: for my $mirror (@$mirrors) {
         EXT: for my $ext (@$exts) {
-                {
-                    my $to =
-                        _abs(sprintf '%s/fltk-%s-r%d.tar.%s',
-                             $args{'to'},
-                             $self->notes('branch'),
-                             $self->notes('svn'),
-                             $ext
-                        );
-                    if (-f $to) {
-                        printf
-                            "(Found preexisting snapshot) ",
-                            $to,
-                            -s $to;
-                        $dir       = $args{'to'};
-                        $archive   = $to;
-                        $extention = $ext;
-                        last MIRROR;
-                    }
-                }
             SCHEME: for my $scheme (@$schemes) {
                     printf "\n[%d/%d] Trying %s mirror based in %s... ",
                         ++$attempt, $total, uc $scheme, $mirror;
@@ -720,12 +713,12 @@ int main ( ) {
                 }
             }
             my $urls = join "\n", @urls;
-            push @{$self->notes('errors')},
-                {stage => 'fltk source download',
-                 fatal => 1,
-                 message =>
-                     sprintf
-                     <<'END', _abs($self->notes('snapshot_dir')), $urls};
+            $self->_error(
+                    {stage => 'fltk source download',
+                     fatal => 1,
+                     message =>
+                         sprintf
+                         <<'END', _abs($self->notes('snapshot_dir')), $urls});
 Okay, we just failed at life.
 
 If you want, you may manually download a snapshot and place it in
@@ -736,67 +729,13 @@ Please, use one of the following mirrors:
 
 Exiting...
 END
-            $self->dispatch('check_errors');
         }
         print "done.\n";
-        $self->notes('snapshot_dir' => $args{'to'});
-    DIGEST: {
-            require Digest::MD5;
-            print 'Validating archive... ';
-            my $FH;
-            if (!open($FH, '<', $archive)) {
-                push @{$self->notes('errors')},
-                    {stage => 'fltk source validation',
-                     fatal => 1,
-                     message =>
-                         "Can't open '$archive' to check MD5 checksum: $!"
-                    };
-                $self->dispatch('check_errors');
-
-                # XXX - Should I delete the archive and retry?
-            }
-            binmode($FH);
-            unshift @INC, _abs(_path($self->base_dir, 'lib'));
-            if (eval 'require ' . $self->module_name) {
-                my $md5 = $self->module_name->_md5;
-                if (Digest::MD5->new->addfile($FH)->hexdigest eq
-                    $md5->{$extention})
-                {   print "MD5 checksum is okay\n";
-                    last DIGEST;
-                }
-            }
-            else {
-                print "Cannot find checksum. Hope this works out...\n";
-                last DIGEST;
-            }
-            shift @INC;
-            close $FH;
-            if ($self->notes('bad_fetch_retry')->{'count'}++ > 10) {
-                push @{$self->notes('errors')},
-                    {
-                    stage => 'fltk source validation',
-                    fatal => 1,
-                    message =>
-                        'Found/downloaded archive failed to match MD5 checksum... Giving up.'
-                    };
-                $self->dispatch('check_errors');
-            }
-            push @{$self->notes('errors')},
-                {
-                stage => 'fltk source validation',
-                fatal => 0,
-                message =>
-                    'Found/downloaded archive failed to match MD5 checksum... Retrying.'
-                };
-            $self->dispatch('check_errors');
-
-            #unlink $archive;
-            $self->dispatch('fetch_fltk');
-        }
+        $self->notes('snapshot_dir'  => $args{'to'});
         $self->notes('snapshot_path' => $archive);
         $self->notes('snapshot_dir'  => $dir);       # Unused but good to know
              #$self->add_to_cleanup($dir);
-        return 1;
+        return $self->depends_on('verify_snapshot');
     }
 
     sub _snapshot_mirrors {
@@ -809,10 +748,58 @@ END
         );
     }
 
+    sub ACTION_verify_snapshot {
+        my ($self) = @_;
+        require Digest::MD5;
+        print 'Checking MD5 hash of archive... ';
+        my $archive = $self->notes('snapshot_path');
+        my ($ext) = $archive =~ m[([^\.]+)$];
+        my $FH;
+        if (!open($FH, '<', $archive)) {
+            $self->_error(
+                 {stage   => 'fltk source validation',
+                  fatal   => 1,
+                  message => "Can't open '$archive' to check MD5 checksum: $!"
+                 }
+            );    # XXX - Should I delete the archive and retry?
+        }
+        binmode($FH);
+        unshift @INC, _abs(_path($self->base_dir, 'lib'));
+        if (eval 'require ' . $self->module_name) {
+            my $md5 = $self->module_name->_md5;
+            if (Digest::MD5->new->addfile($FH)->hexdigest eq $md5->{$ext}) {
+                print "MD5 checksum is okay\n";
+                return 1;
+            }
+        }
+        else {
+            print "Cannot find checksum. Hope this works out...\n";
+            return 1;
+        }
+        shift @INC;
+        close $FH;
+        if ($self->notes('bad_fetch_retry')->{'count'}++ > 10) {
+            $self->_error(
+                {stage => 'fltk source validation',
+                 fatal => 1,
+                 message =>
+                     'Found/downloaded archive failed to match MD5 checksum... Giving up.'
+                }
+            );
+        }
+        $self->_error(
+            {stage => 'fltk source validation',
+             fatal => 0,
+             message =>
+                 'Found/downloaded archive failed to match MD5 checksum... Retrying.'
+            }
+        );
+        $self->dispatch('fetch_fltk');
+    }
+
     sub ACTION_extract_fltk {
         my ($self, %args) = @_;
         $self->depends_on('fetch_fltk');
-        require Archive::Extract;
         $args{'from'} ||= $self->notes('snapshot_path');
         $args{'to'}   ||= _abs($self->notes('extract_dir'));
         unshift @INC, _abs(_path($self->base_dir, 'lib'));
@@ -843,17 +830,16 @@ END
             );
         }
         if (!$_extracted) {
+            require Archive::Extract;
             my $ae = Archive::Extract->new(archive => $args{'from'});
             printf 'Extracting %s to %s... ', _rel($args{'from'}),
                 _rel($args{'to'});
             if (!$ae->extract(to => $args{'to'})) {
-                push @{$self->notes('errors')},
-                    {stage   => 'fltk source extraction',
-                     fatal   => 1,
-                     message => $ae->error
-                    };
-                $self->dispatch('check_errors');
-                return 0;
+                $self->_error({stage   => 'fltk source extraction',
+                               fatal   => 1,
+                               message => $ae->error
+                              }
+                );
             }
             $self->add_to_cleanup($ae->extract_path);
             print "done.\n";
@@ -936,30 +922,52 @@ END
                 print "okay\n";
             }
         }
-        {
-            require Module::Build::YAML;
-            printf 'Updating %s config... ', $self->module_name;
-            my $me        = _abs($self->notes('config_yml'));
-            my $mode_orig = 0644;
-            if (!-d _dir($me)) {
-                require File::Path;
-                File::Path::make_path(_dir($me), {verbose => 1});
-            }
-            elsif (-d $me) {
-                $mode_orig = (stat $me)[2] & 07777;
-                chmod($mode_orig | 0222, $me);    # Make it writeable
-            }
-            Module::Build::YAML->DumpFile($me, \%{$self->notes()});
-            chmod($mode_orig, $me)
-                || exit !printf 'Cannot restore permissions on %s: %s', $me,
-                $!;
-            print "okay\n";
-        }
         if (!chdir $self->base_dir()) {
             print 'Failed to cd to base directory';
             exit 0;
         }
         return 1;
+    }
+
+    sub ACTION_write_config_yml {
+        my ($self) = @_;
+        $self->depends_on('configure');
+        require Module::Build::YAML;
+        printf 'Updating %s config... ', $self->module_name;
+        my $me        = _abs($self->notes('config_yml'));
+        my $mode_orig = 0644;
+        if (!-d _dir($me)) {
+            require File::Path;
+            File::Path::make_path(_dir($me), {verbose => 1});
+        }
+        elsif (-d $me) {
+            $mode_orig = (stat $me)[2] & 07777;
+            chmod($mode_orig | 0222, $me);    # Make it writeable
+        }
+        open(my ($YML), '>', $me)
+            || $self->_error({stage   => 'config.yml creation',
+                              fatal   => 1,
+                              message => sprintf 'Failed to open %s: %s',
+                              $me, $!
+                             }
+            );
+        syswrite($YML, Module::Build::YAML::Dump(\%{$self->notes()}))
+            || $self->_error(
+                         {stage   => 'config.yml creation',
+                          fatal   => 1,
+                          message => sprintf 'Failed to write data to %s: %s',
+                          $me, $!
+                         }
+            );
+        chmod($mode_orig, $me)
+            || $self->_error(
+                   {stage   => 'config.yml creation',
+                    fatal   => 0,
+                    message => sprintf 'Cannot restore permissions on %s: %s',
+                    $me, $!
+                   }
+            );
+        print "okay\n";
     }
 
     sub ACTION_clear_config {
@@ -976,6 +984,7 @@ END
     sub ACTION_build_fltk {
         my ($self) = @_;
         $self->depends_on('write_config_h');
+        $self->depends_on('write_config_yml');
         if (!chdir $self->fltk_dir()) {
             printf 'Failed to cd to %s to locate libs libs',
                 $self->fltk_dir();
@@ -1005,35 +1014,23 @@ END
 
     sub ACTION_code {
         my ($self) = @_;
-        for my $action (qw[build_fltk copy_headers]) {
-            $self->depends_on($action);
-            $self->dispatch('check_errors');
-        }
+        $self->depends_on(qw[build_fltk copy_headers]);
         return $self->SUPER::ACTION_code;
     }
 
-    sub ACTION_check_errors {
-        my ($self) = @_;
-        return if !@{$self->notes('errors')};
-        my $fatal = 0;
-        for my $error (@{$self->notes('errors')}) {
-            next if $error->{'seen'}++ && !$error->{'fatal'};
-            $fatal += $error->{'fatal'};
-            my $msg = $error->{'message'};
-            $msg =~ s|(.+)|  $1|gm;
-            printf "\nWARNING: %s error enountered during %s:\n%s\n",
-                ($error->{'fatal'} ? ('*** Fatal') : 'Non-fatal'),
-                $error->{'stage'}, $msg, '-- ' x 10;
-        }
-        $self->notes('errors' => []);
-        if ($fatal) {
+    sub _error {
+        my ($self, $error) = @_;
+        $error->{'fatal'} = defined $error->{'fatal'} ? $error->{'fatal'} : 0;
+        my $msg = $error->{'message'};
+        $msg =~ s|(.+)|  $1|gm;
+        printf "\nWARNING: %s error enountered during %s:\n%s\n",
+            ($error->{'fatal'} ? ('*** Fatal') : 'Non-fatal'),
+            $error->{'stage'}, $msg, '-- ' x 10;
+        if ($error->{'fatal'}) {
             printf STDOUT ('*** ' x 15) . "\n"
-                . '%s fatal error%s encountered during the build process. '
-                . "Please correct %s and run Build.PL again.\nExiting...",
-                $fatal == 1
-                ? ('A', ' was', 'it')
-                : ($fatal, 's were', 'them');
-            exit 0;
+                . 'error was encountered during the build process . '
+                . "Please correct it and run Build.PL again.\nExiting...",
+                exit 0;
         }
     }
 
@@ -1051,23 +1048,30 @@ END
             my (@libs, @libpaths, @headers, @incpaths);
 
             # FIXME: these four just SCREAM "refactor" at me
-            @libs = (ref($args->{'lib'}) ? @{$args->{'lib'}} : $args->{'lib'})
-                if $args->{'lib'};
-            @libpaths = (ref($args->{'libpath'})
-                         ? @{$args->{'libpath'}}
-                         : $args->{'libpath'}
-            ) if $args->{'libpath'};
-            @headers = (ref($args->{'header'})
-                        ? @{$args->{'header'}}
-                        : $args->{'header'}
-            ) if $args->{'header'};
-            @incpaths = (ref($args->{'incpath'})
-                         ? @{$args->{'incpath'}}
-                         : $args->{'incpath'}
-            ) if $args->{'incpath'};
+            @libs = (
+                ref($args->{' lib '})
+                ? @{$args->{
+                        ' lib
+                '
+                        }
+                    }
+                : $args->{' lib '}
+            ) if $args->{' lib '};
+            @libpaths = (ref($args->{' libpath '})
+                         ? @{$args->{' libpath '}}
+                         : $args->{' libpath '}
+            ) if $args->{' libpath '};
+            @headers = (ref($args->{' header '})
+                        ? @{$args->{' header '}}
+                        : $args->{' header '}
+            ) if $args->{' header '};
+            @incpaths = (ref($args->{' incpath '})
+                         ? @{$args->{' incpath '}}
+                         : $args->{' incpath '}
+            ) if $args->{' incpath '};
             my @missing;
 
-            # first figure out which headers we can't find ...
+            # first figure out which headers we can' t find ...
             for my $header (@headers) {
                 my $exe =
                     $self->build_exe(
