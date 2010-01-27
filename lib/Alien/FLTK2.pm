@@ -3,7 +3,7 @@ package Alien::FLTK2;
     use strict;
     use warnings;
     use File::Spec::Functions qw[catdir rel2abs canonpath];
-    our $BASE = 0; our $SVN = 6970; our $DEV = 8; our $VERSION = sprintf('%d.%05d' . ($DEV ? '_%03d' : ''), $BASE, $SVN, $DEV);
+    our $BASE = 0; our $SVN = 6970; our $DEV = 10; our $VERSION = sprintf('%d.%05d' . ($DEV ? '_%03d' : ''), $BASE, $SVN, $DEV);
 
     sub _md5 {
         return {gz  => '8159cabebbd1b5b774b277827aa4e030',
@@ -16,6 +16,7 @@ package Alien::FLTK2;
         my ($class, $overrides) = @_;    # XXX - overrides are unsupported
         my $self;
         {
+            require File::ShareDir;
             ($self->{'basedir'})
                 = (grep { -d $_ && -f catdir($_, 'config.yml') }
                        map { rel2abs($_) } (
@@ -23,7 +24,6 @@ package Alien::FLTK2;
                              'share', '../share', '../../share'
                        )
                 );
-            require File::ShareDir;
         }
         if (!defined $self->{'basedir'}) {
             warn 'Fail';
@@ -405,6 +405,6 @@ clarification, see http://creativecommons.org/licenses/by-sa/3.0/us/.
 L<Alien::FLTK2|Alien::FLTK2> is based in part on the work of the FLTK project.
 See http://www.fltk.org/.
 
-=for git $Id: FLTK2.pm 4bd8412 2010-01-19 18:32:19Z sanko@cpan.org $
+=for git $Id: FLTK2.pm c1838b2 2010-01-27 20:29:32Z sanko@cpan.org $
 
 =cut

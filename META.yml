@@ -50,7 +50,7 @@ no_index:
 provides:
   Alien::FLTK2:
     file: lib/Alien/FLTK2.pm
-    version: 0.06970_008
+    version: 0.06970_010
 requires:
   Archive::Extract: 0
   Carp: 0
@@ -76,4 +76,4 @@ resources:
   homepage: http://sanko.github.com/fltk-perl/
   license: http://www.perlfoundation.org/artistic_license_2_0
   repository: http://github.com/sanko/alien-fltk2
-version: 0.06970_008
+version: 0.06970_010

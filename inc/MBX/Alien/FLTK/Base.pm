@@ -561,7 +561,6 @@ int main ( ) {
             }
         );
 =cut
-
         }
         return 1;
     }
@@ -819,7 +818,6 @@ END
             )
         {   $self->notes('extract' => $args{'to'});
             $_extracted = 1;
-            last;
             return 1;    # XXX - what should we do?!?
             require File::Path;
             printf "Removing existing directory...\n", $args{'to'};
