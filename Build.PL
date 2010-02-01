@@ -40,7 +40,8 @@ my $mb = $class->new(
         (  ($^O eq 'VMS') ? ('VMS::DCLsym' => 0)
          : ()
         ),
-        'YAML::Tiny' => 0
+        'File::Find::Rule' => 0,
+        'YAML::Tiny'       => 0
     },
     build_requires => {'Archive::Extract'   => 0,
                        base                 => 0,
@@ -62,7 +63,8 @@ my $mb = $class->new(
                        (  ($^O eq 'VMS') ? ('VMS::DCLsym' => 0)
                         : ()
                        ),
-                       'YAML::Tiny' => 0
+                       'File::Find::Rule' => 0,
+                       'YAML::Tiny'       => 0
     },
     add_to_cleanup => [qw[Alien-FLTK2-* src/* share/*],
                        map {"*$_"} (
@@ -114,6 +116,7 @@ $mb->notes(
     libs_source => {
         fltk2_images => {
             directory => 'images',
+            required  => 0,
             source    => [
                 map { $_ . '.cxx' }
                     qw[FileIcon2 Fl_Guess_Image fl_jpeg fl_png HelpDialog
@@ -122,6 +125,7 @@ $mb->notes(
         },
         fltk2_z => {
             directory => 'images/zlib',
+            required  => 0,
             source    => [
                 map { $_ . '.c' }
                     qw[adler32 compress crc32 gzio uncompr deflate trees zutil
@@ -130,6 +134,7 @@ $mb->notes(
         },
         fltk2_jpeg => {
             directory => 'images/libjpeg',
+            required  => 0,
             source    => [
                 map { $_ . '.c' }
                     qw[jmemnobs jcapimin jcapistd jccoefct jccolor jcdctmgr
@@ -144,6 +149,7 @@ $mb->notes(
         },
         fltk2_png => {
             directory => 'images/libpng',
+            required  => 0,
             include   => 'zlib',
             source    => [
                 map { $_ . '.c' }
@@ -154,6 +160,7 @@ $mb->notes(
         },
         fltk2 => {
             directory => 'src',
+            required  => 1,
             source    => [
                 (map { $_ . '.c' } qw[scandir string utf vsnprintf]),
                 (map { $_ . '.cxx' }
@@ -188,6 +195,7 @@ $mb->notes(
         },
         fltk2_gl => {
             directory => 'OpenGL',
+            required  => 0,
             source    => [
                 map { $_ . '.cxx' }
                     qw[Fl_Gl_Choice Fl_Gl_Overlay Fl_Gl_Window gl_draw
@@ -196,6 +204,7 @@ $mb->notes(
         },
         fltk2_glut => {
               directory => 'glut',
+              required  => 0,
               source => [map { $_ . '.cxx' } qw[glut_compatability glut_font]]
         }
     }

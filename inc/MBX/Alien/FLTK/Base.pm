@@ -10,21 +10,21 @@ package inc::MBX::Alien::FLTK::Base;
     use base 'Module::Build';
     use lib '../../../../';
     use inc::MBX::Alien::FLTK::Utility
-        qw[_o _a _path _dir _file _rel _abs _exe can_run];
-    use lib _abs('.');
+        qw[_o _a _path _dir _file _rel _abs _exe _cwd can_run];
+    use lib '.';
 
     sub fltk_dir {
         my ($self, $extra) = @_;
         $self->depends_on('extract_fltk');
-        return
-            _abs(_path($self->notes('extract'),
-                       (      'fltk-'
-                            . $self->notes('branch') . '-r'
-                            . $self->notes('svn')
-                       ),
-                       $extra || ()
-                 )
-            );
+        return (_path($self->base_dir,
+                      $self->notes('extract'),
+                      (      'fltk-'
+                           . $self->notes('branch') . '-r'
+                           . $self->notes('svn')
+                      ),
+                      $extra || ()
+                )
+        );
     }
 
     sub archive {
@@ -48,6 +48,9 @@ package inc::MBX::Alien::FLTK::Base;
         my ($self, $args) = @_;
         local $^W = 0;
         local $self->cbuilder->{'quiet'} = 1;
+
+        #use Data::Dump;
+        #ddx $args;
         my $code = 0;
         if (!$args->{'source'}) {
             (my $FH, $args->{'source'}) = tempfile(
@@ -79,14 +82,14 @@ package inc::MBX::Alien::FLTK::Base;
         };
 
         #unlink $args->{'source'} if $code;
-        return if !$obj;
-        return $obj;
+        return $obj ? $obj : ();
     }
 
     sub link_exe {
         my ($self, $args) = @_;
-        local $^W = 0;
-        local $self->cbuilder->{'quiet'} = 1;
+
+        #local $^W = 0;
+        #local $self->cbuilder->{'quiet'} = 1;
         my $exe = eval {
             $self->cbuilder->link_executable(
                                      objects            => $args->{'objects'},
@@ -101,8 +104,7 @@ package inc::MBX::Alien::FLTK::Base;
                                      )
             );
         };
-        return if !$exe;
-        return $exe;
+        return $exe ? $exe : ();
     }
 
     sub build_exe {
@@ -165,7 +167,7 @@ package inc::MBX::Alien::FLTK::Base;
         $self->notes('cache'         => {});
         $self->notes('_a'            => $Config{'_a'});
         $self->notes('cxxflags'      => ' ');
-        $self->notes('GL'            => ' ');
+        $self->notes('ldflags'       => ' ');
         $self->notes('include_dirs'  => {});
         $self->notes('library_paths' => {});
 
@@ -508,11 +510,11 @@ int main ( ) {
         {
             print "Setting defaults...\n";
             print "    BORDER_WIDTH = 2\n";
-            $self->notes('BORDER_WIDTH' => 2);
+            $self->notes('define')->{'BORDER_WIDTH'} = 2;
             print "    USE_COLORMAP = 1\n";
-            $self->notes('USE_COLORMAP' => 1);
-            print "    HAVE_GL_OVERLAY = 1\n";
-            $self->notes('HAVE_GL_OVERLAY' => 'HAVE_OVERLAY');
+            $self->notes('define')->{'USE_COLORMAP'} = 1;
+            print "    HAVE_GL_OVERLAY = HAVE_OVERLAY\n";
+            $self->notes('define')->{'HAVE_GL_OVERLAY'} = 'HAVE_OVERLAY';
 
 =todo
         $self->notes(
@@ -569,17 +571,28 @@ int main ( ) {
         my ($self, $build) = @_;
         $self->quiet(1);
         $self->notes('libs' => []);
+        if (!chdir $self->base_dir()) {
+            print 'Failed to cd to base directory';
+            exit 0;
+        }
         my $libs = $self->notes('libs_source');
         for my $lib (sort { lc $a cmp lc $b } keys %$libs) {
             print "Building $lib...\n";
+            $self->notes(
+                     'ldflags' => '-l' . $lib . ' ' . $self->notes('ldflags'))
+                if $libs->{$lib}{'required'}
+                    && ($self->notes('ldflags') !~ m[-l$lib ]);
+            my $cwd = _abs(_cwd());
             if (!chdir _path($build->fltk_dir(), $libs->{$lib}{'directory'}))
-            {   printf 'Cannot chdir to %s to build %s',
+            {   printf 'Cannot chdir to %s to build %s: %s',
                     _path($build->fltk_dir(), $libs->{$lib}{'directory'}),
-                    $lib;
+                    $lib, $!;
                 exit 0;
             }
             my @obj;
-            for my $src (sort { lc $a cmp lc $b } @{$libs->{$lib}{'source'}})
+            for my $src (    #sort { lc $a cmp lc $b }
+                          @{$libs->{$lib}{'source'}}
+                )
             {   my $obj = _o($src);
                 $obj
                     = $build->up_to_date($src, $obj)
@@ -588,23 +601,27 @@ int main ( ) {
                     print "Compiling $src...\n";
                     return
                         $self->compile(
-                          {source       => $src,
-                           include_dirs => [
-                               $Config{'incpath'},
-                               $build->fltk_dir(),
-                               $build->fltk_dir($self->notes('headers_path')),
-                               $build->fltk_dir(
+                        {source       => $src,
+                         include_dirs => [
+                             $Config{'incpath'},
+                             $build->fltk_dir(),
+                             '..',
+                             '../'
+                                 . $self->notes('include_path_compatability'),
+                             _rel($build->fltk_dir()),
+                             $build->fltk_dir($self->notes('headers_path')),
+                             $build->fltk_dir(
                                     $self->notes('include_path_compatability')
-                               ),
-                               $build->fltk_dir(
+                             ),
+                             $build->fltk_dir(
                                            $self->notes('include_path_images')
                                                . '/zlib/'
-                               ),
-                               (keys %{$self->notes('include_dirs')})
-                           ],
-                           cxxflags => [$Config{'ccflags'}, '-MD'],
-                           output   => $obj
-                          }
+                             ),
+                             (keys %{$self->notes('include_dirs')})
+                         ],
+                         cxxflags => [$Config{'ccflags'}, '-MD'],
+                         output   => $obj
+                        }
                         );
                     }
                     ->();
@@ -612,21 +629,28 @@ int main ( ) {
                     printf 'Failed to compile %s', $src;
                     exit 0;
                 }
-                push @obj, $obj;
+                push @obj, _abs($obj);
+            }
+            if (!chdir $cwd) {
+                printf 'Cannot chdir to %s after building %s: %s',
+                    $cwd, $lib, $!;
+                exit 0;
             }
             my $_lib = _rel($build->fltk_dir('lib/' . _a($lib)));
-            $lib
+            printf 'Archiving %s... ', $lib;
+            $_lib
                 = $build->up_to_date(\@obj, $_lib)
                 ? $_lib
-                : $self->archive({output  => $_lib,
+                : $self->archive({output  => _abs($_lib),
                                   objects => \@obj
                                  }
                 );
-            if (!$lib) {
+            if (!$_lib) {
                 printf 'Failed to create %s library', $lib;
                 exit 0;
             }
-            push @{$self->notes('libs')}, _abs($lib);
+            push @{$self->notes('libs')}, $_lib;
+            print "done\n";
         }
         if (!chdir $build->fltk_dir()) {
             print 'Failed to cd to ' . $self->fltk_dir() . ' to return home';
@@ -638,15 +662,16 @@ int main ( ) {
     # Module::Build actions
     sub ACTION_fetch_fltk {
         my ($self, %args) = @_;
-        $args{'to'} = _abs(
+        $args{'to'} = (
             defined $args{'to'} ? $args{'to'} : $self->notes('snapshot_dir'));
         $args{'ext'}    ||= [qw[gz bz2]];
         $args{'scheme'} ||= [qw[http ftp]];
         {
             my ($file) = grep {-f} map {
-                _abs(sprintf '%s/fltk-%s-r%d.tar.%s',
-                     $args{'to'}, $self->notes('branch'),
-                     $self->notes('svn'), $_)
+                (sprintf '%s/fltk-%s-r%d.tar.%s',
+                 $args{'to'}, $self->notes('branch'),
+                 $self->notes('svn'), $_
+                    )
             } @{$args{'ext'}};
             if (defined $file) {
                 $self->notes('snapshot_path' => $file);
@@ -687,9 +712,12 @@ int main ( ) {
                     if ($archive and -f $archive) {
                         $self->notes('snapshot_mirror_uri'      => $ff->uri);
                         $self->notes('snapshot_mirror_location' => $mirror);
-                        $archive = _abs(sprintf '%s/fltk-%s-r%d.tar.%s',
-                                        $args{'to'}, $self->notes('branch'),
-                                        $self->notes('svn'), $ext);
+                        $archive = (sprintf '%s/fltk-%s-r%d.tar.%s',
+                                    $args{'to'},
+                                    $self->notes('branch'),
+                                    $self->notes('svn'),
+                                    $ext
+                        );
                         $extention = $ext;
                         $dir       = $args{'to'};
                         last MIRROR;
@@ -713,11 +741,10 @@ int main ( ) {
             }
             my $urls = join "\n", @urls;
             $self->_error(
-                    {stage => 'fltk source download',
-                     fatal => 1,
-                     message =>
-                         sprintf
-                         <<'END', _abs($self->notes('snapshot_dir')), $urls});
+                {stage => 'fltk source download',
+                 fatal => 1,
+                 message =>
+                     sprintf <<'END', ($self->notes('snapshot_dir')), $urls});
 Okay, we just failed at life.
 
 If you want, you may manually download a snapshot and place it in
@@ -763,7 +790,7 @@ END
             );    # XXX - Should I delete the archive and retry?
         }
         binmode($FH);
-        unshift @INC, _abs(_path($self->base_dir, 'lib'));
+        unshift @INC, (_path($self->base_dir, 'lib'));
         if (eval 'require ' . $self->module_name) {
             my $md5 = $self->module_name->_md5;
             if (Digest::MD5->new->addfile($FH)->hexdigest eq $md5->{$ext}) {
@@ -800,38 +827,53 @@ END
         my ($self, %args) = @_;
         $self->depends_on('fetch_fltk');
         $args{'from'} ||= $self->notes('snapshot_path');
-        $args{'to'}   ||= _abs($self->notes('extract_dir'));
-        unshift @INC, _abs(_path($self->base_dir, 'lib'));
+        $args{'to'}   ||= _rel(($self->notes('extract_dir')));
+        printf 'Extracting snapshot from %s to %s... ', _rel($args{'from'}),
+            _rel($args{'to'});
+        unshift @INC, (_path($self->base_dir, 'lib'));
         my $_extracted;
         if (eval 'require ' . $self->module_name) {
             my $unique_file = $self->module_name->_unique_file;
-            $_extracted = -f _abs($args{'to'} . sprintf '/fltk-%s-r%d/%s',
-                                  $self->notes('branch'),
-                                  $self->notes('svn'),
-                                  $unique_file
-            ) ? 1 : 0;
+            if (-f ($args{'to'} . sprintf '/fltk-%s-r%d/%s',
+                    $self->notes('branch'),
+                    $self->notes('svn'),
+                    $unique_file
+                )
+                )
+            {   printf
+                    "Found extracted snapshot at %s... (unique file %s located)\n",
+                    _rel($args{'to'} . sprintf '/fltk-%s-r%d',
+                         $self->notes('branch'),
+                         $self->notes('svn')),
+                    _rel($args{'to'} . sprintf '/fltk-%s-r%d/%s',
+                         $self->notes('branch'),
+                         $self->notes('svn'), $unique_file);
+                $_extracted = 1;
+            }
         }
-        elsif (-d _abs($args{'to'} . sprintf '/fltk-%s-r%d',
-                       $self->notes('branch'),
-                       $self->notes('svn')
+        elsif (-d ($args{'to'} . sprintf '/fltk-%s-r%d',
+                   $self->notes('branch'),
+                   $self->notes('svn')
                )
             )
         {   $self->notes('extract' => $args{'to'});
             $_extracted = 1;
+            printf "Found extracted snapshot at %s...\n",
+                _rel($args{'to'} . sprintf '/fltk-%s-r%d',
+                     $self->notes('branch'),
+                     $self->notes('svn'));
             return 1;    # XXX - what should we do?!?
             require File::Path;
             printf "Removing existing directory...\n", $args{'to'};
-            File::Path::remove_tree(_abs($args{'to'} . sprintf '/fltk-%s-r%d',
-                                         $self->notes('branch'),
-                                         $self->notes('svn')
+            File::Path::remove_tree(($args{'to'} . sprintf '/fltk-%s-r%d',
+                                     $self->notes('branch'),
+                                     $self->notes('svn')
                                     )
             );
         }
         if (!$_extracted) {
             require Archive::Extract;
             my $ae = Archive::Extract->new(archive => $args{'from'});
-            printf 'Extracting %s to %s... ', _rel($args{'from'}),
-                _rel($args{'to'});
             if (!$ae->extract(to => $args{'to'})) {
                 $self->_error({stage   => 'fltk source extraction',
                                fatal   => 1,
@@ -850,11 +892,12 @@ END
     sub ACTION_configure {
         my ($self) = @_;
         $self->depends_on('extract_fltk');
+        if (!$self->notes('timestamp_configure')
 
-        #if (   !$self->notes('define')
-        #    || !-f $self->fltk_dir('config.h'))
-        {
-            print "Gathering configuration data...\n";
+            #   || !$self->notes('define')
+            #|| !-f $self->fltk_dir('config.h')
+            )
+        {   print "Gathering configuration data...\n";
             $self->configure();
             $self->notes(timestamp_configure => time);
         }
@@ -881,12 +924,6 @@ END
             )
         {   {
                 print 'Creating config.h... ';
-                if (!chdir $self->fltk_dir()) {
-                    print 'Failed to cd to '
-                        . $self->fltk_dir()
-                        . ' to write config.h';
-                    exit 0;
-                }
                 my $config = '';
                 my %config = %{$self->notes('define')};
                 for my $key (
@@ -912,10 +949,6 @@ END
                 syswrite($CONFIG_H, $config) == length($config)
                     || Carp::confess 'Failed to write config.h';
                 close $CONFIG_H;
-                if (!chdir $self->base_dir()) {
-                    print 'Failed to cd to base directory';
-                    exit 0;
-                }
                 $self->notes(timestamp_config_h => time);
                 print "okay\n";
             }
@@ -932,7 +965,7 @@ END
         $self->depends_on('configure');
         require Module::Build::YAML;
         printf 'Updating %s config... ', $self->module_name;
-        my $me        = _abs($self->notes('config_yml'));
+        my $me        = ($self->notes('config_yml'));
         my $mode_orig = 0644;
         if (!-d _dir($me)) {
             require File::Path;
@@ -983,29 +1016,16 @@ END
         my ($self) = @_;
         $self->depends_on('write_config_h');
         $self->depends_on('write_config_yml');
-        if (!chdir $self->fltk_dir()) {
-            printf 'Failed to cd to %s to locate libs libs',
-                $self->fltk_dir();
-            exit 0;
-        }
         my @lib = $self->build_fltk($self);
         if (!chdir $self->base_dir()) {
             printf 'Failed to return to %s to copy libs', $self->base_dir();
             exit 0;
         }
-        if (!chdir _path($self->fltk_dir() . '/lib')) {
-            printf 'Failed to cd to %s to copy libs', $self->fltk_dir();
-            exit 0;
-        }
         for my $lib (@{$self->notes('libs')}) {
             $self->copy_if_modified(
-                            from   => $lib,
-                            to_dir => _path($self->base_dir(), qw[share libs])
+                   from => $lib,
+                   to => _path($self->base_dir(), qw[share libs], _file($lib))
             );
-        }
-        if (!chdir $self->base_dir()) {
-            print 'Failed to cd to base directory';
-            exit 0;
         }
         return 1;
     }
@@ -1107,46 +1127,31 @@ END
         sub find_lib {
             my ($self, $find, $dir) = @_;
             printf 'Looking for lib%s... ', $find;
-            no warnings 'File::Find';
+            require File::Find::Rule;
             $find =~ s[([\+\*\.])][\\$1]g;
             $dir ||= $Config{'libpth'};
             $dir = _path($dir);
-            my $lib;
-            find(
-                sub {
-                    $lib = _path(_abs($File::Find::dir))
-                        if $_ =~ qr[lib$find$Config{'_a'}];
-                },
-                split ' ',
-                $dir
-            ) if $dir;
-            printf "%s\n", defined $lib ? 'found ' . $lib : 'missing';
-            return $lib;
+            my @files
+                = File::Find::Rule->file()
+                ->name('lib' . $find . $Config{'_a'})->maxdepth(1)
+                ->in(split ' ', $dir);
+            printf "%s\n", @files ? 'found ' . (_dir($files[0])) : 'missing';
+            return _path((_dir($files[0])));
         }
 
         sub find_h {
             my ($self, $file, $dir) = @_;
             printf 'Looking for %s... ', $file;
-            no warnings 'File::Find';
+            require File::Find::Rule;
             $dir ||= $Config{'incpath'} . ' ' . $Config{'usrinc'};
             $dir  = _path($dir);
             $file = _path($file);
-            my $h;
-            find(
-                {wanted => sub {
-                     return if !-d $_;
-                     $h = _path(_abs($_))
-                         if -f _path($_, $file);
-                 },
-                 no_chdir => 1
-                },
-                split ' ',
-                $dir
-            ) if $dir;
-            if (defined $h) {
-                printf "found %s\n", $h;
-                $self->notes('include_dirs')->{$h}++;
-                return $h;
+            my @files = File::Find::Rule->file()->name($file)->maxdepth(1)
+                ->in(split ' ', $dir);
+            if (@files) {
+                printf "found %s\n", _dir($files[0]);
+                $self->notes('include_dirs')->{_dir($files[0])}++;
+                return _dir($files[0]);
             }
             print "missing\n";
             return ();

@@ -12,6 +12,7 @@ build_requires:
   File::Basename: 0
   File::Fetch: 0
   File::Find: 0
+  File::Find::Rule: 0
   File::Path: 2.07
   File::ShareDir: 0
   File::Spec: 0
@@ -50,7 +51,7 @@ no_index:
 provides:
   Alien::FLTK2:
     file: lib/Alien/FLTK2.pm
-    version: 0.06970_010
+    version: 0.06970_011
 requires:
   Archive::Extract: 0
   Carp: 0
@@ -61,6 +62,7 @@ requires:
   File::Basename: 0
   File::Fetch: 0
   File::Find: 0
+  File::Find::Rule: 0
   File::Path: 2.07
   File::ShareDir: 1.00
   File::Spec: 0
@@ -76,4 +78,4 @@ resources:
   homepage: http://sanko.github.com/fltk-perl/
   license: http://www.perlfoundation.org/artistic_license_2_0
   repository: http://github.com/sanko/alien-fltk2
-version: 0.06970_010
+version: 0.06970_011
