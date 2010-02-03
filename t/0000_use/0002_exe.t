@@ -16,6 +16,7 @@ my ($FH, $SRC)
                            SUFFIX  => '.cxx',
                            CLEANUP => 1
     );
+
 #die $AF->library_path;
 syswrite($FH, <<'CPP') || BAIL_OUT("Failed to write to $SRC: $!"); close $FH;
 #include <fltk/Window.h>
@@ -45,7 +46,8 @@ my $OBJ = $CC->compile('C++'                => 1,
 ok($OBJ, 'Compile with FLTK headers');
 my $EXE = eval {
     $CC->link_executable(objects            => $OBJ,
-                         extra_linker_flags => $AF->ldflags())};
+                         extra_linker_flags => $AF->ldflags());
+};
 ok($EXE,          'Link exe with fltk');
 ok(!system($EXE), sprintf 'Run exe');
 unlink $OBJ, $EXE, $SRC;

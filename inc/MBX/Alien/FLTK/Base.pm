@@ -359,7 +359,7 @@ int main ( ) {
 }
 
                 print "yes\n";
-                $self->notes('define')->{'HAVE_POSIX'} = 1;
+                $self->notes('define')->{'HAVE_SCANDIR'} = 1;
             }
             else { print "no\n" }
         }
@@ -384,80 +384,6 @@ int main ( ) {
                 $self->notes('define')->{'HAVE_SCANDIR_POSIX'} = 1;
             }
             else { print "no\n" }
-        }
-        {
-            print "Checking string functions...\n";
-            if (($self->notes('os') =~ m[^hpux$]i)
-                && $self->notes('os_ver') == 1020)
-            {   print
-                    "\nNot using built-in snprintf function because you are running HP-UX 10.20\n";
-                $self->notes('define')->{'HAVE_SNPRINTF'} = undef;
-                print
-                    "\nNot using built-in vnprintf function because you are running HP-UX 10.20\n";
-                $self->notes('define')->{'HAVE_VNPRINTF'} = undef;
-            }
-            elsif (($self->notes('os') =~ m[^dec_osf$]i)
-                   && $self->notes('os_ver') == 40)
-            {   print
-                    "\nNot using built-in snprintf function because you are running Tru64 4.0.\n";
-                $self->notes('define')->{'HAVE_SNPRINTF'} = undef;
-                print
-                    "\nNot using built-in vnprintf function because you are running Tru64 4.0.\n";
-                $self->notes('define')->{'HAVE_VNPRINTF'} = undef;
-            }
-        }
-        {
-            my %functions = (
-                strdup      => 'HAVE_STRDUP',
-                strcasecmp  => 'HAVE_STRCASECMP',
-                strncasecmp => 'HAVE_STRNCASECMP',
-                strlcat     => 'HAVE_STRLCRT',
-
-                #strlcpy     => 'HAVE_STRLCPY'
-            );
-            for my $func (keys %functions) {
-                printf 'Checking for %s... ', $func;
-                my $obj = $self->compile({code => <<""});
-/* Define $func to an innocuous variant, in case <limits.h> declares $func.
-   For example, HP-UX 11i <limits.h> declares gettimeofday.  */
-#define $func innocuous_$func
-/* System header to define __stub macros and hopefully few prototypes,
-    which can conflict with char $func (); below.
-    Prefer <limits.h> to <assert.h> if __STDC__ is defined, since
-    <limits.h> exists even on freestanding compilers.  */
-#ifdef __STDC__
-# include <limits.h>
-#else
-# include <assert.h>
-#endif
-#undef $func
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char $func ();
-/* The GNU C library defines this for functions which it implements
-    to always fail with ENOSYS.  Some functions are actually named
-    something starting with __ and the normal name is an alias.  */
-#if defined __stub_$func || defined __stub___$func
-choke me
-#endif
-int main ( ) {
-    return $func ( );
-    return 0;
-}
-
-                if ($obj) {
-                    print "yes\n";
-                    $self->notes('define')->{$functions{$func}} = 1;
-                }
-                else {
-                    print "no\n";
-                    $self->notes('define')->{$functions{$func}} = undef;
-                }
-            }
         }
         {
             $self->find_h('pthread.h');
@@ -563,6 +489,7 @@ int main ( ) {
             }
         );
 =cut
+
         }
         return 1;
     }
@@ -578,10 +505,6 @@ int main ( ) {
         my $libs = $self->notes('libs_source');
         for my $lib (sort { lc $a cmp lc $b } keys %$libs) {
             print "Building $lib...\n";
-            $self->notes(
-                     'ldflags' => '-l' . $lib . ' ' . $self->notes('ldflags'))
-                if $libs->{$lib}{'required'}
-                    && ($self->notes('ldflags') !~ m[-l$lib ]);
             my $cwd = _abs(_cwd());
             if (!chdir _path($build->fltk_dir(), $libs->{$lib}{'directory'}))
             {   printf 'Cannot chdir to %s to build %s: %s',
@@ -776,6 +699,7 @@ END
 
     sub ACTION_verify_snapshot {
         my ($self) = @_;
+        return 1 if $self->notes('snapshot_okay');
         require Digest::MD5;
         print 'Checking MD5 hash of archive... ';
         my $archive = $self->notes('snapshot_path');
@@ -795,11 +719,13 @@ END
             my $md5 = $self->module_name->_md5;
             if (Digest::MD5->new->addfile($FH)->hexdigest eq $md5->{$ext}) {
                 print "MD5 checksum is okay\n";
+                $self->notes('snapshot_okay' => 'Valid @ ' . time);
                 return 1;
             }
         }
         else {
             print "Cannot find checksum. Hope this works out...\n";
+            $self->notes('snapshot_okay' => 'Pray that it is... @' . time);
             return 1;
         }
         shift @INC;
@@ -828,50 +754,55 @@ END
         $self->depends_on('fetch_fltk');
         $args{'from'} ||= $self->notes('snapshot_path');
         $args{'to'}   ||= _rel(($self->notes('extract_dir')));
-        printf 'Extracting snapshot from %s to %s... ', _rel($args{'from'}),
-            _rel($args{'to'});
         unshift @INC, (_path($self->base_dir, 'lib'));
-        my $_extracted;
-        if (eval 'require ' . $self->module_name) {
-            my $unique_file = $self->module_name->_unique_file;
-            if (-f ($args{'to'} . sprintf '/fltk-%s-r%d/%s',
-                    $self->notes('branch'),
-                    $self->notes('svn'),
-                    $unique_file
-                )
-                )
-            {   printf
-                    "Found extracted snapshot at %s... (unique file %s located)\n",
-                    _rel($args{'to'} . sprintf '/fltk-%s-r%d',
-                         $self->notes('branch'),
-                         $self->notes('svn')),
-                    _rel($args{'to'} . sprintf '/fltk-%s-r%d/%s',
-                         $self->notes('branch'),
-                         $self->notes('svn'), $unique_file);
-                $_extracted = 1;
-            }
+        eval 'require ' . $self->module_name;
+        my $unique_file = $self->module_name->_unique_file;
+        if (-f ($args{'to'} . sprintf '/fltk-%s-r%d/%s',
+                $self->notes('branch'),
+                $self->notes('svn'),
+                $unique_file
+            )
+            && !$self->notes('extracted_timestamp')
+            )
+        {   warn sprintf
+                "Odd... Found extracted snapshot at %s... (unique file %s located)\n",
+                _rel($args{'to'} . sprintf '/fltk-%s-r%d',
+                     $self->notes('branch'),
+                     $self->notes('svn')),
+                _rel($args{'to'} . sprintf '/fltk-%s-r%d/%s',
+                     $self->notes('branch'),
+                     $self->notes('svn'), $unique_file);
+            $self->notes(extracted_timestamp => time);
+            $self->notes('extract'           => $args{'to'});
+            $self->notes('snapshot_path'     => $args{'from'});
+            return 1;
         }
         elsif (-d ($args{'to'} . sprintf '/fltk-%s-r%d',
                    $self->notes('branch'),
                    $self->notes('svn')
                )
+               && !$self->notes('extracted_timestamp')
             )
         {   $self->notes('extract' => $args{'to'});
-            $_extracted = 1;
-            printf "Found extracted snapshot at %s...\n",
+            warn sprintf
+                "Strage... found partially extracted snapshot at %s...\n",
                 _rel($args{'to'} . sprintf '/fltk-%s-r%d',
                      $self->notes('branch'),
                      $self->notes('svn'));
-            return 1;    # XXX - what should we do?!?
             require File::Path;
-            printf "Removing existing directory...\n", $args{'to'};
+            print 'Removing existing directory... ', $args{'to'};
             File::Path::remove_tree(($args{'to'} . sprintf '/fltk-%s-r%d',
                                      $self->notes('branch'),
                                      $self->notes('svn')
                                     )
             );
+            $self->notes('extracted_timestamp' => undef);
+            print "done\n";
         }
-        if (!$_extracted) {
+        if (!$self->notes('extracted_timestamp')) {
+            printf 'Extracting snapshot from %s to %s... ',
+                _rel($args{'from'}),
+                _rel($args{'to'});
             require Archive::Extract;
             my $ae = Archive::Extract->new(archive => $args{'from'});
             if (!$ae->extract(to => $args{'to'})) {
@@ -882,10 +813,11 @@ END
                 );
             }
             $self->add_to_cleanup($ae->extract_path);
+            $self->notes(extracted_timestamp => time);
+            $self->notes('extract'           => $args{'to'});
+            $self->notes('snapshot_path'     => $args{'from'});
             print "done.\n";
         }
-        $self->notes('extract'       => $args{'to'});
-        $self->notes('snapshot_path' => $args{'from'});
         return 1;
     }
 
@@ -969,7 +901,7 @@ END
         my $mode_orig = 0644;
         if (!-d _dir($me)) {
             require File::Path;
-            File::Path::make_path(_dir($me), {verbose => 1});
+            $self->add_to_cleanup(File::Path::make_path(_dir($me)));
         }
         elsif (-d $me) {
             $mode_orig = (stat $me)[2] & 07777;
@@ -1001,15 +933,18 @@ END
         print "okay\n";
     }
 
-    sub ACTION_clear_config {
+    sub ACTION_reset_config {
         my ($self) = @_;
-        my $me = $self->notes('config_yml');
-        return 1 if !-f $me;
+        return if !$self->notes('timestamp_configure');
         printf 'Cleaning %s config... ', $self->module_name();
-        my $mode_orig = (stat $me)[2] & 07777;
-        chmod($mode_orig | 0222, $me);    # Make it writeable
-        unlink $me;
-        print "okay\n";
+        my $yml = $self->notes('config_yml');
+        if (-f $yml) {
+            my $mode_orig = (stat $yml)[2] & 07777;
+            chmod($mode_orig | 0222, $yml);    # Make it writeable
+            unlink $yml;
+        }
+        $self->notes(timestamp_configure => 0);
+        print "done\n";
     }
 
     sub ACTION_build_fltk {
@@ -1054,7 +989,7 @@ END
 
     sub ACTION_clean {
         my $self = shift;
-        $self->dispatch('clear_config');
+        $self->dispatch('reset_config');
         $self->SUPER::ACTION_clean(@_);
         $self->notes(errors => []);    # Reset fatal and non-fatal errors
     }
@@ -1149,7 +1084,7 @@ END
             my @files = File::Find::Rule->file()->name($file)->maxdepth(1)
                 ->in(split ' ', $dir);
             if (@files) {
-                printf "found %s\n", _dir($files[0]);
+                printf "found in %s\n", _dir($files[0]);
                 $self->notes('include_dirs')->{_dir($files[0])}++;
                 return _dir($files[0]);
             }

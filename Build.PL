@@ -108,15 +108,11 @@ $mb->notes(branch                     => '2.0.x');
 $mb->notes(include_path_images        => '/images');
 $mb->notes(include_path_compatability => '/fltk/compat');
 $mb->notes(headers_path               => 'fltk');
-$mb->notes(ldflags                    => ' -lfltk2 ');
-$mb->notes(ldflags_image =>
-        ' -lfltk2_images -lfltk2_png -lfltk2_z -lfltk2_images -lfltk2_jpeg ');
 $mb->notes(use_cairo => 0);                         # TODO - MacOS
 $mb->notes(
     libs_source => {
         fltk2_images => {
             directory => 'images',
-            required  => 0,
             source    => [
                 map { $_ . '.cxx' }
                     qw[FileIcon2 Fl_Guess_Image fl_jpeg fl_png HelpDialog
@@ -125,7 +121,6 @@ $mb->notes(
         },
         fltk2_z => {
             directory => 'images/zlib',
-            required  => 0,
             source    => [
                 map { $_ . '.c' }
                     qw[adler32 compress crc32 gzio uncompr deflate trees zutil
@@ -134,7 +129,6 @@ $mb->notes(
         },
         fltk2_jpeg => {
             directory => 'images/libjpeg',
-            required  => 0,
             source    => [
                 map { $_ . '.c' }
                     qw[jmemnobs jcapimin jcapistd jccoefct jccolor jcdctmgr
@@ -149,7 +143,6 @@ $mb->notes(
         },
         fltk2_png => {
             directory => 'images/libpng',
-            required  => 0,
             include   => 'zlib',
             source    => [
                 map { $_ . '.c' }
@@ -160,7 +153,6 @@ $mb->notes(
         },
         fltk2 => {
             directory => 'src',
-            required  => 1,
             source    => [
                 (map { $_ . '.c' } qw[scandir string utf vsnprintf]),
                 (map { $_ . '.cxx' }
@@ -195,7 +187,6 @@ $mb->notes(
         },
         fltk2_gl => {
             directory => 'OpenGL',
-            required  => 0,
             source    => [
                 map { $_ . '.cxx' }
                     qw[Fl_Gl_Choice Fl_Gl_Overlay Fl_Gl_Window gl_draw
@@ -204,7 +195,6 @@ $mb->notes(
         },
         fltk2_glut => {
               directory => 'glut',
-              required  => 0,
               source => [map { $_ . '.cxx' } qw[glut_compatability glut_font]]
         }
     }
