@@ -3,7 +3,7 @@ package Alien::FLTK2;
     use strict;
     use warnings;
     use File::Spec::Functions qw[catdir rel2abs canonpath];
-    our $BASE = 0; our $SVN = 6970; our $DEV = 12; our $VERSION = sprintf('%d.%05d' . ($DEV ? '_%03d' : ''), $BASE, $SVN, $DEV);
+    our $BASE = 0; our $SVN = 6970; our $DEV = 13; our $VERSION = sprintf('%d.%05d' . ($DEV ? '_%03d' : ''), $BASE, $SVN, $DEV);
 
     sub _md5 {
         return {gz  => '8159cabebbd1b5b774b277827aa4e030',
@@ -93,8 +93,7 @@ package Alien::FLTK2;
                 $LIBS, $libdir, $SHAREDSUFFIX;
         }
         if (grep {m[images]} @args) {
-            my $img_libs
-                = '-lfltk2_images -lfltk2_png -lfltk2_z -lfltk2_images -lfltk2_jpeg';
+            my $img_libs = $self->config->{'image_flags'};
             $LDFLAGS  = " $img_libs $LDFLAGS ";
             $LDSTATIC = sprintf '%s/libfltk2_images%s %s %s',
                 $libdir, $SHAREDSUFFIX, $img_libs, $LDSTATIC;

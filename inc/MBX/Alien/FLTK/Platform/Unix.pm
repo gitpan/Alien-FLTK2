@@ -171,6 +171,7 @@ int main () {
                 if (!$self->notes('can_has_x11')) {
                     $self->_error({stage   => 'configure',
                                    fatal   => 1,
+                                   exit    => 1,
                                    message => <<'' });
 Failed to find the X11 libs. You probably need to install the X11 development
 package first. On Debian Linux, these are the packages libx11-dev and x-dev.

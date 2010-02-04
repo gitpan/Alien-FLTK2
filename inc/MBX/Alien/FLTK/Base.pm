@@ -163,6 +163,210 @@ package inc::MBX::Alien::FLTK::Base;
     # Configure
     sub configure {
         my ($self, $args) = @_;
+        $self->notes('_a'       => $Config{'_a'});
+        $self->notes('ldflags'  => ' ');
+        $self->notes('cxxflags' => ' ');
+        $self->notes('GL'       => ' ');
+        $self->notes(
+            'image_flags' => (
+                $self->notes('branch') eq '1.3.x'
+                ? ' -lfltk_images -lfltk_png -lfltk_z -lfltk_images -lfltk_jpeg '
+                : ' -lfltk2_images -lfltk2_png -lfltk2_z -lfltk2_images -lfltk2_jpeg '
+            )
+        );
+        $self->notes('include_dirs'  => {});
+        $self->notes('library_paths' => {});
+        $self->notes(
+            define => {
+                FLTK_DATADIR => '',    # unused
+                FLTK_DOCDIR  => '',    # unused
+                BORDER_WIDTH => 2,     # 1.3
+                WORDS_BIGENDIAN =>
+                    ((unpack('h*', pack('s', 1)) =~ /01/) ? 1 : 0),    # both
+                U16                    => undef,                       # both
+                U32                    => undef,                       # both
+                U64                    => undef,                       # both
+                USE_X11                => undef,                       # both
+                USE_QUARTZ             => undef,                       # both
+                __APPLE_QUARTZ__       => undef,                       # 1.3.x
+                __APPLE_QD__           => undef,                       # 1.3.x
+                USE_COLORMAP           => 1,                           # both
+                USE_X11_MULTITHREADING => 0,                           # 2.0
+                USE_XFT                => 0,                           # both
+                USE_XCURSOR            => undef,
+                USE_CAIRO => ($self->notes('branch') eq '2.0.x' ? 0 : undef)
+                ,                                                      # both
+                USE_CLIPOUT      => 0,
+                USE_XSHM         => 0,
+                HAVE_XDBE        => 0,                                 # both
+                USE_XDBE         => 'HAVE_XDBE',                       # both
+                HAVE_OVERLAY     => 0,                                 # both
+                USE_OVERLAY      => 0,
+                USE_XINERAMA     => 0,
+                USE_MULTIMONITOR => 1,
+                USE_STOCK_BRUSH  => 1,
+                USE_XIM          => 1,
+                HAVE_ICONV       => 0,
+                HAVE_GL => ($self->find_h('GL/gl.h') ? 1 : undef),     # both
+                HAVE_GL_GLU_H => ($self->find_h('GL/glu.h') ? 1 : undef)
+                ,                                                      # both
+                HAVE_GL_OVERLAY           => 'HAVE_OVERLAY',           # both
+                USE_GL_OVERLAY            => 0,                        # 2.0
+                USE_GLEW                  => 0,                        # 2.0
+                HAVE_GLXGETPROCADDRESSARB => undef,                    # 1.3
+                HAVE_DIRENT_H => ($self->find_h('dirent.h') ? 1 : undef),
+                HAVE_STRING_H => ($self->find_h('string.h') ? 1 : undef),
+                HAVE_SYS_NSTRING_H =>
+                    ($self->find_h('sys/ndir.h') ? 1 : undef),
+                HAVE_SYS_DIR_H => ($self->find_h('sys/dir.h') ? 1 : undef),
+                HAVE_NDIR_H    => ($self->find_h('ndir.h')    ? 1 : undef),
+                HAVE_SCANDIR   => 1,
+                HAVE_SCANDIR_POSIX => undef,
+                HAVE_STRING_H      => ($self->find_h('string.h') ? 1 : undef),
+                HAVE_STRINGS_H   => ($self->find_h('strings.h') ? 1 : undef),
+                HAVE_VSNPRINTF   => 1,
+                HAVE_SNPRINTF    => 1,
+                HAVE_STRCASECMP  => undef,
+                HAVE_STRDUP      => undef,
+                HAVE_STRLCAT     => undef,
+                HAVE_STRLCPY     => undef,
+                HAVE_STRNCASECMP => undef,
+                HAVE_SYS_SELECT_H =>
+                    ($self->find_h('sys/select.h') ? 1 : undef),
+                HAVE_SYS_STDTYPES_H =>
+                    ($self->find_h('sys/stdtypes.h') ? 1 : undef),    # both
+                USE_POLL          => 0,                               # both
+                HAVE_LIBPNG       => undef,
+                HAVE_LIBZ         => undef,
+                HAVE_LIBJPEG      => undef,
+                HAVE_LOCAL_PNG_H  => undef,
+                HAVE_PNG_H        => undef,
+                HAVE_LIBPNG_PNG_H => undef,
+                HAVE_LOCAL_JPEG_H => undef,
+                HAVE_PTHREAD      => undef,
+                HAVE_PTHREAD_H    => ($self->find_h('pthread.h') ? 1 : undef),
+                HAVE_EXCEPTIONS   => undef,
+                HAVE_DLOPEN       => 0,
+                BOXX_OVERLAY_BUGS => 0,
+                SGI320_BUG        => 0,
+                CLICK_MOVES_FOCUS => 0,
+                IGNORE_NUMLOCK    => 1,
+                USE_PROGRESSIVE_DRAW => 1,
+                HAVE_XINERAMA        => 0    # 1.3.x
+            }
+        );
+        {
+            print 'Locating library archiver... ';
+            my $ar = can_run('ar');
+            if (!$ar) {
+                print "Could not find the library archiver, aborting.\n";
+                exit 0;
+            }
+            $ar .= ' cr' . (can_run('ranlib') ? 's' : '');
+            $self->notes(AR => $ar);
+            print "$ar\n";
+        }
+        {
+            my %sizeof;
+            for my $type (qw[short int long]) {
+                printf 'Checking size of %s... ', $type;
+                my $exe = $self->build_exe({code => <<"" });
+static long int longval () { return (long int) (sizeof ($type)); }
+static unsigned long int ulongval () { return (long int) (sizeof ($type)); }
+#include <stdio.h>
+#include <stdlib.h>
+int main ( ) {
+    if (((long int) (sizeof ($type))) < 0) {
+        long int i = longval ();
+        if (i != ((long int) (sizeof ($type))))
+            return 1;
+        printf ("%ld", i);
+    }
+    else {
+        unsigned long int i = ulongval ();
+        if (i != ((long int) (sizeof ($type))))
+            return 1;
+        printf ("%lu", i);
+    }
+    return 0;
+}
+
+                $sizeof{$type} = $exe ? `$exe` : 0;
+                print "okay\n";
+            }
+
+            #
+            if ($sizeof{'short'} == 2) {
+                $self->notes('define')->{'U16'} = 'unsigned short';
+            }
+            if ($sizeof{'int'} == 4) {
+                $self->notes('define')->{'U32'} = 'unsigned';
+            }
+            else {
+                $self->notes('define')->{'U32'} = 'unsigned long';
+            }
+            if ($sizeof{'int'} == 8) {
+                $self->notes('define')->{'U64'} = 'unsigned';
+            }
+            elsif ($sizeof{'long'} == 8) {
+                $self->notes('define')->{'U64'} = 'unsigned long';
+            }
+            {
+                print
+                    'Checking whether the compiler recognizes bool as a built-in type... ';
+                my $exe = $self->build_exe({code => <<"" });
+#include <stdio.h>
+#include <stdlib.h>
+int f(int  x){printf ("int "); return 1;}
+int f(char x){printf ("char"); return 1;}
+int f(bool x){printf ("bool"); return 1;}
+int main ( ) {
+    bool b = true;
+    return f(b);
+}
+
+                my $type = $exe ? `$exe` : 0;
+                if ($type) { print "yes ($type)\n" }
+                else {
+                    print "no\n";    # But we can pretend...
+                    $self->notes(  'cxxflags' => $self->notes('cxxflags')
+                                 . ' -Dbool=char -Dfalse=0 -Dtrue=1 ');
+                }
+            }
+            {
+                print 'Checking for library containing pow... ';
+                my $_have_pow = '';
+            LIB: for my $lib ('', '-lm') {
+                    my $exe = $self->build_exe(
+                                  {code => <<'', extra_linker_flags => $lib});
+#include <stdio.h>
+#include <stdlib.h>
+#ifdef __cplusplus
+extern "C"
+#endif
+char pow ();
+int main ( ) {
+    printf ("1");
+    return pow ();
+    return 0;
+}
+
+                    if ($exe && `$exe`) {
+                        if   ($lib) { print "$lib\n" }
+                        else        { print "none required\n" }
+                        $self->notes(
+                             'ldflags' => $self->notes('ldflags') . " $lib ");
+                        $_have_pow = 1;
+                        last LIB;
+                    }
+                }
+                if (!$_have_pow) {
+                    print "FAIL!\n";    # XXX - quit
+                }
+            }
+
+=pod oldversion
+
         $self->notes('define'        => {});
         $self->notes('cache'         => {});
         $self->notes('_a'            => $Config{'_a'});
@@ -489,7 +693,6 @@ int main ( ) {
             }
         );
 =cut
-
         }
         return 1;
     }
@@ -762,7 +965,7 @@ END
                 $self->notes('svn'),
                 $unique_file
             )
-            && !$self->notes('extracted_timestamp')
+            && !$self->notes('timestamp_extracted')
             )
         {   warn sprintf
                 "Odd... Found extracted snapshot at %s... (unique file %s located)\n",
@@ -772,7 +975,7 @@ END
                 _rel($args{'to'} . sprintf '/fltk-%s-r%d/%s',
                      $self->notes('branch'),
                      $self->notes('svn'), $unique_file);
-            $self->notes(extracted_timestamp => time);
+            $self->notes(timestamp_extracted => time);
             $self->notes('extract'           => $args{'to'});
             $self->notes('snapshot_path'     => $args{'from'});
             return 1;
@@ -781,7 +984,7 @@ END
                    $self->notes('branch'),
                    $self->notes('svn')
                )
-               && !$self->notes('extracted_timestamp')
+               && !$self->notes('timestamp_extracted')
             )
         {   $self->notes('extract' => $args{'to'});
             warn sprintf
@@ -796,10 +999,10 @@ END
                                      $self->notes('svn')
                                     )
             );
-            $self->notes('extracted_timestamp' => undef);
+            $self->notes('timestamp_extracted' => undef);
             print "done\n";
         }
-        if (!$self->notes('extracted_timestamp')) {
+        if (!$self->notes('timestamp_extracted')) {
             printf 'Extracting snapshot from %s to %s... ',
                 _rel($args{'from'}),
                 _rel($args{'to'});
@@ -813,7 +1016,7 @@ END
                 );
             }
             $self->add_to_cleanup($ae->extract_path);
-            $self->notes(extracted_timestamp => time);
+            $self->notes(timestamp_extracted => time);
             $self->notes('extract'           => $args{'to'});
             $self->notes('snapshot_path'     => $args{'from'});
             print "done.\n";
@@ -944,6 +1147,7 @@ END
             unlink $yml;
         }
         $self->notes(timestamp_configure => 0);
+        $self->notes(timestamp_extracted => 0);
         print "done\n";
     }
 
@@ -983,7 +1187,7 @@ END
             printf STDOUT ('*** ' x 15) . "\n"
                 . 'error was encountered during the build process . '
                 . "Please correct it and run Build.PL again.\nExiting...",
-                exit 0;
+                exit defined $error->{'exit'} ? $error->{'exit'} : 0;
         }
     }
 
@@ -1075,6 +1279,23 @@ END
         }
 
         sub find_h {
+            my ($self, $file, $dir) = @_;
+            printf 'Looking for %s... ', $file;
+            $dir = join ' ', ($dir || ''), $Config{'incpath'},
+                $Config{'usrinc'};
+            $dir =~ s|\s+| |g;
+            for my $test (split m[\s+]m, $dir) {
+                if (-e _path($test . '/' . $file)) {
+                    printf "found in %s\n", _path($test);
+                    $self->notes('include_dirs')->{_path($test)}++;
+                    return _path($test);
+                }
+            }
+            print "missing\n";
+            return ();
+        }
+
+        sub _find_h {
             my ($self, $file, $dir) = @_;
             printf 'Looking for %s... ', $file;
             require File::Find::Rule;
