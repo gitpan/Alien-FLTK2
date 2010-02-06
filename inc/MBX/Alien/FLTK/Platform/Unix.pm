@@ -27,13 +27,10 @@ package inc::MBX::Alien::FLTK::Platform::Unix;
         print "have pthread... yes (assumed)\n";
         $self->notes('define')->{'HAVE_PTHREAD'} = 1;
         $self->notes('ldflags' => $self->notes('ldflags') . ' -lpthread ');
-        print "have sys/ndir.h... \n";
         $self->notes('define')->{'HAVE_SYS_NDIR_H'}
             = ($self->find_h('sys/ndir.h') ? 1 : undef);
-        print "have sys/dir.h... \n";
         $self->notes('define')->{'HAVE_SYS_DIR_H'}
             = ($self->find_h('sys/dir.h') ? 1 : undef);
-        print "have ndir.h... \n";
         $self->notes('define')->{'HAVE_NDIR_H'}
             = ($self->find_h('ndir.h') ? 1 : undef);
         {
@@ -149,26 +146,26 @@ int main () {
                 last if grep {m[^no_x11$]} @args;
                 $self->notes('define')->{'USE_X11'} = 1;
                 print 'Checking for X11 libs... ';
-                $self->notes('can_has_x11', 0);
-                for my $incdir ($self->_x11_()) {
-                    my $libdir = $incdir;
-                    $libdir =~ s|include|lib|;
-                    if ($self->assert_lib({lib     => 'X11',
-                                           libpath => $libdir,
-                                           header  => 'X11/Xlib.h',
-                                           incpath => $incdir
+                my $can_haz_x11 = 0;
+                for my $format ($self->_x11_()) {
+                    my $incdir = sprintf $format, 'include';
+                    my $libdir = sprintf $format, 'lib';
+                    if ($self->assert_lib({libs         => ['X11'],
+                                           lib_dirs     => [$libdir],
+                                           headers      => ['X11/Xlib.h'],
+                                           include_dirs => [$incdir]
                                           }
                         )
                         )
                     {   $self->notes('include_dirs')->{_abs($incdir)}++;
                         $self->notes('ldflags' => " -L$libdir -lX11 "
                                      . $self->notes('ldflags'));
-                        $self->notes('can_has_x11', 1);
+                        $can_haz_x11 = 1;
                         print "okay\n";
                         last;
                     }
                 }
-                if (!$self->notes('can_has_x11')) {
+                if (!$can_haz_x11) {
                     $self->_error({stage   => 'configure',
                                    fatal   => 1,
                                    exit    => 1,
@@ -180,18 +177,17 @@ If I'm just missing something... patches welcome.
                 }
             }
             {
-
-                #
                 print 'Checking for Xcursor libs... ';
                 $self->notes('define')->{'USE_XCURSOR'} = 0;
-                for my $incdir ($self->_x11_()) {
-                    my $libdir = $incdir;
-                    $libdir =~ s|include|lib|;
-                    if ($self->assert_lib({lib     => 'X11/Xcursor',
-                                           libpath => $libdir,
-                                           header  => 'Xcursor/Xcursor.h',
-                                           incpath => $incdir
-                                          }
+                for my $format ($self->_x11_()) {
+                    my $incdir = sprintf $format, 'include';
+                    my $libdir = sprintf $format, 'lib';
+                    if ($self->assert_lib(
+                                     {libs     => ['Xcursor'],
+                                      lib_dirs => [$libdir],
+                                      headers  => ['X11/Xcursor/Xcursor.h'],
+                                      include_dirs => [$incdir]
+                                     }
                         )
                         )
                     {   $self->notes('include_dirs')->{_abs($incdir)}++;
@@ -204,7 +200,8 @@ If I'm just missing something... patches welcome.
                 }
                 if (!$self->notes('define')->{'USE_XCURSOR'}) {
                     $self->_error({stage   => 'configure',
-                                   fatal   => 0,
+                                   fatal   => 1,
+                                   exit    => 1,
                                    message => <<'' });
 Failed to find the XCursor libs. You probably need to install the X11
 development package first. On Debian Linux, these are the packages libx11-dev,
@@ -217,16 +214,16 @@ x-dev, and libxcursor-dev. If I'm just missing something... patches welcome.
                 #
                 print 'Checking for Xi libs... ';
                 my $Xi_okay = 0;
-            XI: for my $incdir ($self->_x11_()) {
-                    my $libdir = $incdir;
-                    $libdir =~ s|include|lib|;
-                    if ($self->assert_lib({lib     => [qw[Xi Xext]],
-                                           libpath => $libdir,
-                                           header  => [
+            XI: for my $format ($self->_x11_()) {
+                    my $incdir = sprintf $format, 'include';
+                    my $libdir = sprintf $format, 'lib';
+                    if ($self->assert_lib({libs     => [qw[Xi Xext]],
+                                           lib_dirs => [$libdir],
+                                           headers  => [
                                                     'X11/extensions/XInput.h',
                                                     'X11/extensions/XI.h'
                                            ],
-                                           incpath => $incdir
+                                           include_dirs => [$incdir]
                                           }
                         )
                         )
@@ -255,8 +252,8 @@ package. If I'm just missing something... patches welcome.
             my $GL_LIB = '';
             $self->notes('define')->{'HAVE_GL'} = 0;
         GL_LIB: for my $_GL_lib (qw[GL MesaGL]) {
-                if ($self->assert_lib({lib    => $_GL_lib,
-                                       header => 'GL/gl.h'
+                if ($self->assert_lib({libs    => [$_GL_lib],
+                                       headers => ['GL/gl.h']
                                       }
                     )
                     )
@@ -277,8 +274,8 @@ package. If I'm just missing something... patches welcome.
             }
             if ($GL_LIB && $self->notes('define')->{'HAVE_GL_GLU_H'}) {
                 print 'Checking for GL/glu.h... ';
-                if ($self->assert_lib({lib    => 'GLU',
-                                       header => 'GL/glu.h'
+                if ($self->assert_lib({libs    => ['GLU'],
+                                       headers => ['GL/glu.h']
                                       }
                     )
                     )
@@ -289,6 +286,10 @@ package. If I'm just missing something... patches welcome.
                 else { print "no\n" }
             }
             $self->notes(GL => $GL_LIB);
+            for my $lib (keys %{$self->notes('libs_source')}) {
+                $self->notes('libs_source')->{$lib}{'disabled'}++
+                    if $lib =~ m[gl$]i;
+            }
         }
         $self->quiet(0);
         return 1;
@@ -297,26 +298,26 @@ package. If I'm just missing something... patches welcome.
     sub _x11_ {    # Common directories for X headers. Check X11 before X11R\d
         return     # because it is often a symlink to the current release.
             qw[
-            /usr/X11/include
-            /usr/X11R7/include          /usr/X11R6/include
-            /usr/X11R5/include          /usr/X11R4/include
-            /usr/include
-            /usr/include/X11R7          /usr/include/X11R6
-            /usr/include/X11R5          /usr/include/X11R4
-            /usr/local/X11/include
-            /usr/local/X11R7/include    /usr/local/X11R6/include
-            /usr/local/X11R5/include    /usr/local/X11R4/include
-            /usr/local/include
-            /usr/local/include/X11R7    /usr/local/include/X11R6
-            /usr/local/include/X11R5    /usr/local/include/X11R4
-            /usr/X386/include           /usr/x386/include
-            /usr/XFree86/include
-            /usr/include                /usr/local/include
-            /usr/unsupported/include
-            /usr/athena/include
-            /usr/local/x11r5/include
-            /usr/lpp/Xamples/include
-            /usr/openwin/include        /usr/openwin/share/include   ];
+            /usr/%s                     /usr/local/%s
+            /usr/X11/%s
+            /usr/X11R7/%s          /usr/X11R6/%s
+            /usr/X11R5/%s          /usr/X11R4/%s
+            /usr/%s
+            /usr/%s/X11R7          /usr/%s/X11R6
+            /usr/%s/X11R5          /usr/%s/X11R4
+            /usr/local/X11/%s
+            /usr/local/X11R7/%s     /usr/local/X11R6/%s
+            /usr/local/X11R5/%s     /usr/local/X11R4/%s
+            /usr/local/%s
+            /usr/local/%s/X11R7     /usr/local/%s/X11R6
+            /usr/local/%s/X11R5     /usr/local/%s/X11R4
+            /usr/X386/%s                /usr/x386/%s
+            /usr/XFree86/%s
+            /usr/unsupported/%s
+            /usr/athena/%s
+            /usr/local/x11r5/%s
+            /usr/lpp/Xamples/%s
+            /usr/openwin/%s        /usr/openwin/share/%s   ];
     }
     1;
 }

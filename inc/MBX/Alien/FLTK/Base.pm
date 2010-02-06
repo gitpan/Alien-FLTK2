@@ -10,7 +10,7 @@ package inc::MBX::Alien::FLTK::Base;
     use base 'Module::Build';
     use lib '../../../../';
     use inc::MBX::Alien::FLTK::Utility
-        qw[_o _a _path _dir _file _rel _abs _exe _cwd can_run];
+        qw[_o _a _path _realpath _dir _file _rel _abs _exe _cwd can_run];
     use lib '.';
 
     sub fltk_dir {
@@ -178,9 +178,9 @@ package inc::MBX::Alien::FLTK::Base;
         $self->notes('library_paths' => {});
         $self->notes(
             define => {
-                FLTK_DATADIR => '',    # unused
-                FLTK_DOCDIR  => '',    # unused
-                BORDER_WIDTH => 2,     # 1.3
+                FLTK_DATADIR => '""',    # unused
+                FLTK_DOCDIR  => '""',    # unused
+                BORDER_WIDTH => 2,       # 1.3
                 WORDS_BIGENDIAN =>
                     ((unpack('h*', pack('s', 1)) =~ /01/) ? 1 : 0),    # both
                 U16                    => undef,                       # both
@@ -215,12 +215,11 @@ package inc::MBX::Alien::FLTK::Base;
                 USE_GLEW                  => 0,                        # 2.0
                 HAVE_GLXGETPROCADDRESSARB => undef,                    # 1.3
                 HAVE_DIRENT_H => ($self->find_h('dirent.h') ? 1 : undef),
-                HAVE_STRING_H => ($self->find_h('string.h') ? 1 : undef),
-                HAVE_SYS_NSTRING_H =>
-                    ($self->find_h('sys/ndir.h') ? 1 : undef),
-                HAVE_SYS_DIR_H => ($self->find_h('sys/dir.h') ? 1 : undef),
-                HAVE_NDIR_H    => ($self->find_h('ndir.h')    ? 1 : undef),
-                HAVE_SCANDIR   => 1,
+                HAVE_STRING_H   => ($self->find_h('string.h')   ? 1 : undef),
+                HAVE_SYS_NDIR_H => ($self->find_h('sys/ndir.h') ? 1 : undef),
+                HAVE_SYS_DIR_H  => ($self->find_h('sys/dir.h')  ? 1 : undef),
+                HAVE_NDIR_H     => ($self->find_h('ndir.h')     ? 1 : undef),
+                HAVE_SCANDIR    => 1,
                 HAVE_SCANDIR_POSIX => undef,
                 HAVE_STRING_H      => ($self->find_h('string.h') ? 1 : undef),
                 HAVE_STRINGS_H   => ($self->find_h('strings.h') ? 1 : undef),
@@ -235,26 +234,76 @@ package inc::MBX::Alien::FLTK::Base;
                     ($self->find_h('sys/select.h') ? 1 : undef),
                 HAVE_SYS_STDTYPES_H =>
                     ($self->find_h('sys/stdtypes.h') ? 1 : undef),    # both
-                USE_POLL          => 0,                               # both
-                HAVE_LIBPNG       => undef,
-                HAVE_LIBZ         => undef,
-                HAVE_LIBJPEG      => undef,
-                HAVE_LOCAL_PNG_H  => undef,
-                HAVE_PNG_H        => undef,
-                HAVE_LIBPNG_PNG_H => undef,
-                HAVE_LOCAL_JPEG_H => undef,
-                HAVE_PTHREAD      => undef,
-                HAVE_PTHREAD_H    => ($self->find_h('pthread.h') ? 1 : undef),
-                HAVE_EXCEPTIONS   => undef,
-                HAVE_DLOPEN       => 0,
-                BOXX_OVERLAY_BUGS => 0,
-                SGI320_BUG        => 0,
-                CLICK_MOVES_FOCUS => 0,
-                IGNORE_NUMLOCK    => 1,
+                USE_POLL => 0,                                        # both
+                HAVE_LIBPNG => (
+                    $self->assert_lib(
+                        {   libs    => ['png'],
+                            headers => ['libpng/png.h'],
+                            code =>
+                                'int main ( ) {return png_read_rows( ); return 0;}'
+                        }
+                        ) ? 1 : undef
+                ),
+                HAVE_LIBZ => 0,  # ($self->assert_lib({libs=>['z']})?1:undef),
+                HAVE_LIBJPEG =>
+                    ($self->assert_lib({libs => ['jpeg']}) ? 1 : undef),
+                HAVE_LOCAL_PNG_H => undef,    # ! HAVE_LIBPNG
+                HAVE_PNG_H        => ($self->find_h('png.h') ? 1 : undef),
+                HAVE_LIBPNG_PNG_H => (
+                              $self->assert_lib({headers => ['libpng/png.h']})
+                              ? 1
+                              : undef
+                ),
+                HAVE_LOCAL_JPEG_H =>
+                    ($self->find_h('local/jpeg.h') ? 1 : undef),
+                HAVE_PTHREAD   => ($self->find_lib('pthread') ? 1 : undef),
+                HAVE_PTHREAD_H => ($self->find_h('pthread.h') ? 1 : undef),
+                HAVE_EXCEPTIONS      => undef,
+                HAVE_DLOPEN          => 0,
+                BOXX_OVERLAY_BUGS    => 0,
+                SGI320_BUG           => 0,
+                CLICK_MOVES_FOCUS    => 0,
+                IGNORE_NUMLOCK       => 1,
                 USE_PROGRESSIVE_DRAW => 1,
-                HAVE_XINERAMA        => 0    # 1.3.x
+                HAVE_XINERAMA        => 0        # 1.3.x
             }
         );
+        {    # Both | All platforms | Standard headers/functions
+            my @headers = qw[dirent.h sys/ndir.h sys/dir.h ndir.h];
+        HEADER: for my $header (@headers) {
+                printf 'Checking for %s that defines DIR... ', $header;
+                my $exe = $self->assert_lib(
+                               {headers => [$header], code => sprintf <<'' });
+#include <stdio.h>
+#include <sys/types.h>
+int main ( ) {
+    if ( ( DIR * ) 0 )
+        return 0;
+    printf( "1" );
+    return 0;
+}
+
+                my $define = uc 'HAVE_' . $header;
+                if ($exe) {
+                    print "yes ($header)\n";
+                    $define =~ s|[/\.]|_|g;
+                    $self->notes('define')->{$define} = 1;
+
+                    #$self->notes('cache')->{'header_dirent'} = $header;
+                    last HEADER;
+                }
+                else {
+                    $self->notes('define')->{$define} = undef;
+                    print "no\n";    # But we can pretend...
+                }
+            }
+        }
+
+        #
+        $self->notes('define')->{'HAVE_LOCAL_PNG_H'}
+            = $self->notes('define')->{'HAVE_LIBPNG'} ? undef : 1;
+
+        #
         {
             print 'Locating library archiver... ';
             my $ar = can_run('ar');
@@ -699,7 +748,6 @@ int main ( ) {
 
     sub build_fltk {
         my ($self, $build) = @_;
-        $self->quiet(1);
         $self->notes('libs' => []);
         if (!chdir $self->base_dir()) {
             print 'Failed to cd to base directory';
@@ -707,6 +755,7 @@ int main ( ) {
         }
         my $libs = $self->notes('libs_source');
         for my $lib (sort { lc $a cmp lc $b } keys %$libs) {
+            next if $libs->{$lib}{'disabled'};
             print "Building $lib...\n";
             my $cwd = _abs(_cwd());
             if (!chdir _path($build->fltk_dir(), $libs->{$lib}{'directory'}))
@@ -716,9 +765,32 @@ int main ( ) {
                 exit 0;
             }
             my @obj;
-            for my $src (    #sort { lc $a cmp lc $b }
-                          @{$libs->{$lib}{'source'}}
+            my %include_dirs = %{$self->notes('include_dirs')};
+            for my $dir (
+
+                #split(' ', $Config{'incpath'}),
+                $build->fltk_dir(),
+                '..',
+                ($self->notes('include_path_compatability')
+                 ? '../' . $self->notes('include_path_compatability')
+                 : ()
+                    ),
+                (length $self->notes('include_path_compatability')
+                 ? $build->fltk_dir($self->notes('include_path_compatability')
+                     )
+                 : ()
+                    ),
+                $build->fltk_dir(
+                                $self->notes('include_path_images') . '/zlib/'
                 )
+                )
+            {   $include_dirs{_rel(_realpath($dir))}++;
+            }
+
+            #use Data::Dump;
+            #ddx \%include_dirs;
+            #die;
+            for my $src (sort { lc $a cmp lc $b } @{$libs->{$lib}{'source'}})
             {   my $obj = _o($src);
                 $obj
                     = $build->up_to_date($src, $obj)
@@ -727,27 +799,11 @@ int main ( ) {
                     print "Compiling $src...\n";
                     return
                         $self->compile(
-                        {source       => $src,
-                         include_dirs => [
-                             $Config{'incpath'},
-                             $build->fltk_dir(),
-                             '..',
-                             '../'
-                                 . $self->notes('include_path_compatability'),
-                             _rel($build->fltk_dir()),
-                             $build->fltk_dir($self->notes('headers_path')),
-                             $build->fltk_dir(
-                                    $self->notes('include_path_compatability')
-                             ),
-                             $build->fltk_dir(
-                                           $self->notes('include_path_images')
-                                               . '/zlib/'
-                             ),
-                             (keys %{$self->notes('include_dirs')})
-                         ],
-                         cxxflags => [$Config{'ccflags'}, '-MD'],
-                         output   => $obj
-                        }
+                                     {source       => $src,
+                                      include_dirs => [keys %include_dirs],
+                                      cxxflags => [$Config{'ccflags'}, '-MD'],
+                                      output   => $obj
+                                     }
                         );
                     }
                     ->();
@@ -1202,62 +1258,43 @@ END
         # Ganked from Devel::CheckLib
         sub assert_lib {
             my ($self, $args) = @_;
-            my (@libs, @libpaths, @headers, @incpaths);
 
-            # FIXME: these four just SCREAM "refactor" at me
-            @libs = (
-                ref($args->{' lib '})
-                ? @{$args->{
-                        ' lib
-                '
-                        }
-                    }
-                : $args->{' lib '}
-            ) if $args->{' lib '};
-            @libpaths = (ref($args->{' libpath '})
-                         ? @{$args->{' libpath '}}
-                         : $args->{' libpath '}
-            ) if $args->{' libpath '};
-            @headers = (ref($args->{' header '})
-                        ? @{$args->{' header '}}
-                        : $args->{' header '}
-            ) if $args->{' header '};
-            @incpaths = (ref($args->{' incpath '})
-                         ? @{$args->{' incpath '}}
-                         : $args->{' incpath '}
-            ) if $args->{' incpath '};
-            my @missing;
+            # Defaults
+            $args->{'code'}         ||= 'int main( ) { return 0; }';
+            $args->{'include_dirs'} ||= ();
+            $args->{'lib_dirs'}     ||= ();
+            $args->{'headers'}      ||= ();
+            $args->{'libs'}         ||= ();
 
-            # first figure out which headers we can' t find ...
-            for my $header (@headers) {
-                my $exe =
-                    $self->build_exe(
-                    {code =>
-                         "#include <$header>\nint main(void) { return 0; }\n",
-                     include_dirs => \@incpaths,
-                     lib_dirs     => \@libpaths
-                    }
+            #use Data::Dumper;
+            #warn Dumper $args;
+            # first figure out which headers we can' t find...
+            for my $header (@{$args->{'headers'}}) {
+                next
+                    if $self->compile(
+                            {code => "#include <$header>\n" . $args->{'code'},
+                             include_dirs => $args->{'include_dirs'},
+                             lib_dirs     => $args->{'lib_dirs'}
+                            }
                     );
-                if   (defined $exe && -x $exe) { unlink $exe }
-                else                           { push @missing, $header }
+                print "Cannot include $header ";
+                return 0;
             }
 
             # now do each library in turn with no headers
-            for my $lib (@libs) {
-                my $exe =
-                    $self->build_exe(
-                                    {code => "int main(void) { return 0; }\n",
-                                     include_dirs       => \@incpaths,
-                                     lib_dirs           => \@libpaths,
-                                     extra_linker_flags => "-l$lib"
-                                    }
+            for my $lib (@{$args->{'libs'}}) {
+                next
+                    if $self->test_exe(
+                           {code =>
+                                join("\n",
+                                (map {"#include <$_>"} @{$args->{'headers'}}),
+                                $args->{'code'}),
+                            include_dirs       => $args->{'include_dirs'},
+                            lib_dirs           => $args->{'lib_dirs'},
+                            extra_linker_flags => "-l$lib"
+                           }
                     );
-                if   (defined $exe && -x $exe) { unlink $exe }
-                else                           { push @missing, $lib }
-            }
-            my $miss_string = join(q{, }, map {qq{'$_'}} @missing);
-            if (@missing) {
-                warn "Can't link/include $miss_string\n";
+                print "Cannot link $lib ";
                 return 0;
             }
             return 1;
