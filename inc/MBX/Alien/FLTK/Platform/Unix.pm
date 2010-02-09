@@ -28,32 +28,11 @@ package inc::MBX::Alien::FLTK::Platform::Unix;
         $self->notes('define')->{'HAVE_PTHREAD'} = 1;
         $self->notes('ldflags' => $self->notes('ldflags') . ' -lpthread ');
         $self->notes('define')->{'HAVE_SYS_NDIR_H'}
-            = ($self->find_h('sys/ndir.h') ? 1 : undef);
+            = ($self->assert_lib({headers => ['sys/ndir.h']}) ? 1 : undef);
         $self->notes('define')->{'HAVE_SYS_DIR_H'}
-            = ($self->find_h('sys/dir.h') ? 1 : undef);
+            = ($self->assert_lib({headers => ['sys/dir.h']}) ? 1 : undef);
         $self->notes('define')->{'HAVE_NDIR_H'}
-            = ($self->find_h('ndir.h') ? 1 : undef);
-        {
-            print
-                'Checking whether we have the POSIX compatible scandir() prototype... ';
-            my $obj = $self->compile({code => <<'' });
-#include <dirent.h>
-int func (const char *d, dirent ***list, void *sort) {
-    int n = scandir(d, list, 0, (int(*)(const dirent **, const dirent **))sort);
-}
-int main ( ) {
-    return 0;
-}
-
-            if ($obj ? 1 : 0) {
-                print "yes\n";
-                $self->notes('define')->{'HAVE_SCANDIR_POSIX'} = 1;
-            }
-            else {
-                print "no\n";
-                $self->notes('define')->{'HAVE_SCANDIR_POSIX'} = undef;
-            }
-        }
+            = ($self->assert_lib({headers => ['ndir.h']}) ? 1 : undef);
         {
             print "Checking string functions...\n";
             if (($self->notes('os') =~ m[^hpux$]i)
@@ -73,59 +52,6 @@ int main ( ) {
                 print
                     "\nNot using built-in vnprintf function because you are running Tru64 4.0.\n";
                 $self->notes('define')->{'HAVE_VNPRINTF'} = undef;
-            }
-        }
-        {
-            my %functions = (
-                strdup      => 'HAVE_STRDUP',
-                strcasecmp  => 'HAVE_STRCASECMP',
-                strncasecmp => 'HAVE_STRNCASECMP',
-                strlcat     => 'HAVE_STRLCRT',
-
-                #strlcpy     => 'HAVE_STRLCPY'
-            );
-            for my $func (keys %functions) {
-                printf 'Checking for %s... ', $func;
-                my $obj = $self->compile({code => <<""});
-/* Define $func to an innocuous variant, in case <limits.h> declares $func.
-   For example, HP-UX 11i <limits.h> declares gettimeofday.  */
-#define $func innocuous_$func
-/* System header to define __stub macros and hopefully few prototypes,
-    which can conflict with char $func (); below.
-    Prefer <limits.h> to <assert.h> if __STDC__ is defined, since
-    <limits.h> exists even on freestanding compilers.  */
-#ifdef __STDC__
-# include <limits.h>
-#else
-# include <assert.h>
-#endif
-#undef $func
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char $func ();
-/* The GNU C library defines this for functions which it implements
-    to always fail with ENOSYS.  Some functions are actually named
-    something starting with __ and the normal name is an alias.  */
-#if defined __stub_$func || defined __stub___$func
-choke me
-#endif
-int main () {
-    return $func ();
-    return 0;
-}
-
-                if ($obj) {
-                    print "yes\n";
-                    $self->notes('define')->{$functions{$func}} = 1;
-                }
-                else {
-                    print "no\n";
-                    $self->notes('define')->{$functions{$func}} = undef;
-                }
             }
         }
         {
@@ -183,11 +109,13 @@ If I'm just missing something... patches welcome.
                     my $incdir = sprintf $format, 'include';
                     my $libdir = sprintf $format, 'lib';
                     if ($self->assert_lib(
-                                     {libs     => ['Xcursor'],
-                                      lib_dirs => [$libdir],
-                                      headers  => ['X11/Xcursor/Xcursor.h'],
-                                      include_dirs => [$incdir]
-                                     }
+                            {   libs         => ['Xcursor'],
+                                lib_dirs     => [$libdir],
+                                headers      => ['X11/Xcursor/Xcursor.h'],
+                                include_dirs => [$incdir],
+
+            #code => 'int main(){return XcursorImageLoadCursor (); return 0;}'
+                            }
                         )
                         )
                     {   $self->notes('include_dirs')->{_abs($incdir)}++;

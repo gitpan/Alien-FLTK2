@@ -3,7 +3,7 @@ package Alien::FLTK2;
     use strict;
     use warnings;
     use File::Spec::Functions qw[catdir rel2abs canonpath];
-    our $BASE = 0; our $SVN = 6970; our $DEV = 14; our $VERSION = sprintf('%d.%05d' . ($DEV ? '_%03d' : ''), $BASE, $SVN, $DEV);
+    our $BASE = 0; our $SVN = 6970; our $DEV = -16; our $VERSION = sprintf('%d.%05d' . ($DEV ? (($DEV < 0 ? '' : '_') . '%03d') : ('')), $BASE, $SVN, abs $DEV);
 
     sub _md5 {
         return {gz  => '8159cabebbd1b5b774b277827aa4e030',
@@ -73,7 +73,7 @@ package Alien::FLTK2;
         my $LDSTATIC = sprintf '-L%s %s/libfltk2%s %s', $libdir, $libdir,
             $SHAREDSUFFIX,
             ($self->config->{'ldflags'} ? $self->config->{'ldflags'} : '');
-        my $LDFLAGS = "-L$libdir -lfltk2 "
+        my $LDFLAGS = '-lfltk2'
             . ($self->config->{'ldflags'} ? $self->config->{'ldflags'} : '');
         my $LIBS = sprintf '%s/libfltk2%s', $libdir, $SHAREDSUFFIX;
         if (grep {m[forms]} @args) {
@@ -98,8 +98,9 @@ package Alien::FLTK2;
             $LDSTATIC = sprintf '%s/libfltk2_images%s %s %s',
                 $libdir, $SHAREDSUFFIX, $img_libs, $LDSTATIC;
         }
-        return (
-             ((grep {m[static]} @args) ? $LDSTATIC : $LDFLAGS) . ' -lsupc++');
+        return (  "-L$libdir "
+                . ((grep {m[static]} @args) ? $LDSTATIC : $LDFLAGS)
+                . ' -lsupc++');
     }
 
     sub capabilities {
@@ -117,7 +118,7 @@ package Alien::FLTK2;
 
 =head1 NAME
 
-Alien::FLTK2 - Build and use the Fast Light Toolkit binaries
+Alien::FLTK2 - Build and use the experimental C<2.0.x> branch Fast Light Toolkit
 
 =head1 Description
 
@@ -392,6 +393,6 @@ clarification, see http://creativecommons.org/licenses/by-sa/3.0/us/.
 L<Alien::FLTK2|Alien::FLTK2> is based in part on the work of the FLTK project.
 See http://www.fltk.org/.
 
-=for git $Id: FLTK2.pm c1838b2 2010-01-27 20:29:32Z sanko@cpan.org $
+=for git $Id: FLTK2.pm 449ae6a 2010-02-09 21:02:29Z sanko@cpan.org $
 
 =cut

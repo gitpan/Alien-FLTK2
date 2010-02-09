@@ -103,7 +103,7 @@ $mb->notes(snapshot_dir => 'working/snapshot/');    # archive location
 $mb->notes(extract_dir  => 'working/extract/');     # extracted source
 $mb->notes(config_yml   => 'share/config.yml');
 #################################### 'Dynamic' values used by build system ###
-$mb->notes(svn => $mb->dist_version =~ m[\.0*(\d+)]);
+$mb->notes(svn => $mb->dist_version =~ m[\.0?(\d{4})]);
 $mb->notes(branch                     => '2.0.x');
 $mb->notes(include_path_images        => '/images');
 $mb->notes(include_path_compatability => '/fltk/compat');
@@ -262,6 +262,6 @@ Creative Commons Attribution-Share Alike 3.0 License. See
 http://creativecommons.org/licenses/by-sa/3.0/us/legalcode.  For
 clarification, see http://creativecommons.org/licenses/by-sa/3.0/us/.
 
-=for git $Id: Build.PL e967c70 2010-01-27 20:03:52Z sanko@cpan.org $
+=for git $Id: Build.PL f362f54 2010-02-09 18:59:07Z sanko@cpan.org $
 
 =cut

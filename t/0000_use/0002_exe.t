@@ -74,6 +74,6 @@ Creative Commons Attribution-Share Alike 3.0 License. See
 http://creativecommons.org/licenses/by-sa/3.0/us/legalcode.  For
 clarification, see http://creativecommons.org/licenses/by-sa/3.0/us/.
 
-=for git $Id: 0002_exe.t dc42150 2010-01-17 03:51:57Z sanko@cpan.org $
+=for git $Id: 0002_exe.t 3037e50 2010-02-08 16:30:04Z sanko@cpan.org $
 
 =cut
