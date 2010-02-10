@@ -3,7 +3,7 @@ package Alien::FLTK2;
     use strict;
     use warnings;
     use File::Spec::Functions qw[catdir rel2abs canonpath];
-    our $BASE = 0; our $SVN = 6970; our $DEV = -16; our $VERSION = sprintf('%d.%05d' . ($DEV ? (($DEV < 0 ? '' : '_') . '%03d') : ('')), $BASE, $SVN, abs $DEV);
+    our $BASE = 0; our $SVN = 6970; our $DEV = -17; our $VERSION = sprintf('%d.%05d' . ($DEV ? (($DEV < 0 ? '' : '_') . '%03d') : ('')), $BASE, $SVN, abs $DEV);
 
     sub _md5 {
         return {gz  => '8159cabebbd1b5b774b277827aa4e030',
@@ -393,6 +393,6 @@ clarification, see http://creativecommons.org/licenses/by-sa/3.0/us/.
 L<Alien::FLTK2|Alien::FLTK2> is based in part on the work of the FLTK project.
 See http://www.fltk.org/.
 
-=for git $Id: FLTK2.pm 449ae6a 2010-02-09 21:02:29Z sanko@cpan.org $
+=for git $Id: FLTK2.pm 71318bc 2010-02-10 07:20:11Z sanko@cpan.org $
 
 =cut
