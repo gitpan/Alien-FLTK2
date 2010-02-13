@@ -49,10 +49,13 @@ Requirements
 
   * X11/*nix
       X11-based systems require several development packages. On Debian, these
-      may be installed with...
+      may be installed with:
 
         > sudo apt-get install libx11-dev
         > sudo apt-get install libxi-dev
+
+      Additionally, the optional XCurser lib may be installed with:
+
         > sudo apt-get install libxcursor-dev
 
   * Darwin/OSX
@@ -118,4 +121,4 @@ License and Legal
   Alien::FLTK2 is based in part on the work of the FLTK project. See
   http://www.fltk.org/.
 
-$Id: README 29c299d 2010-01-18 05:25:57Z sanko@cpan.org $
+$Id: README dee91f4 2010-02-13 16:55:35Z sanko@cpan.org $
