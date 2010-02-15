@@ -3,7 +3,7 @@ package Alien::FLTK2;
     use strict;
     use warnings;
     use File::Spec::Functions qw[catdir rel2abs canonpath];
-    our $BASE = 0; our $SVN = 6970; our $DEV = -18; our $VERSION = sprintf('%d.%05d' . ($DEV ? (($DEV < 0 ? '' : '_') . '%03d') : ('')), $BASE, $SVN, abs $DEV);
+    our $BASE = 0; our $SVN = 6970; our $DEV = -19; our $VERSION = sprintf('%d.%05d' . ($DEV ? (($DEV < 0 ? '' : '_') . '%03d') : ('')), $BASE, $SVN, abs $DEV);
 
     sub _md5 {
         return {gz  => '8159cabebbd1b5b774b277827aa4e030',
@@ -73,7 +73,7 @@ package Alien::FLTK2;
         my $LDSTATIC = sprintf '-L%s %s/libfltk2%s %s', $libdir, $libdir,
             $SHAREDSUFFIX,
             ($self->config->{'ldflags'} ? $self->config->{'ldflags'} : '');
-        my $LDFLAGS = '-lfltk2'
+        my $LDFLAGS = '-lfltk2 '
             . ($self->config->{'ldflags'} ? $self->config->{'ldflags'} : '');
         my $LIBS = sprintf '%s/libfltk2%s', $libdir, $SHAREDSUFFIX;
         if (grep {m[forms]} @args) {
@@ -396,6 +396,6 @@ clarification, see http://creativecommons.org/licenses/by-sa/3.0/us/.
 L<Alien::FLTK2|Alien::FLTK2> is based in part on the work of the FLTK project.
 See http://www.fltk.org/.
 
-=for git $Id: FLTK2.pm dee91f4 2010-02-13 16:55:35Z sanko@cpan.org $
+=for git $Id: FLTK2.pm 29adc40 2010-02-15 21:58:16Z sanko@cpan.org $
 
 =cut

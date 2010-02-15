@@ -4,7 +4,7 @@ use lib '../lib/blib';
 {
     use Alien::FLTK2;
     use ExtUtils::CBuilder;
-    my $AF     = Alien::FLTK->new();
+    my $AF     = Alien::FLTK2->new();
     my $CC     = ExtUtils::CBuilder->new();
     my $source = 'hello_world.cxx';
     open(my $FH, '>', $source) || die '...';
@@ -59,6 +59,6 @@ Creative Commons Attribution-Share Alike 3.0 License. See
 http://creativecommons.org/licenses/by-sa/3.0/us/legalcode.  For
 clarification, see http://creativecommons.org/licenses/by-sa/3.0/us/.
 
-=for git $Id: 0000_synopsis.pl ea85283 2010-01-17 19:42:37Z sanko@cpan.org $
+=for git $Id: 0000_synopsis.pl 2152c78 2010-02-15 21:52:01Z sanko@cpan.org $
 
 =cut

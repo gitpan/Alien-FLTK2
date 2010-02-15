@@ -1,3 +1,15 @@
+Version 0.06970019 | 2010-02-15 21:58:16Z (Mon, 15 Feb 2010) | 29adc40
+
+    Resolved Issues/Bug Fixes:
+     * Un(der)tested CygWin configuration and build fixes
+
+    Documentation/Sample Code/Test Suite:
+     * examples/0001_synopsis.pl had a fail-worthy typo
+
+    Notes:
+     * For now, we only support Win32-ish CygWin builds. In the future, we may
+       include X11-like builds. But don't count on it.
+
 Version 0.06970018 | 2010-02-13 16:55:35Z (Sat, 13 Feb 2010) | dee91f4
 
     Resolved Issues/Bug Fixes:
@@ -117,6 +129,6 @@ _ -.-. .... .- -. --. . ... _________________________________________
 For more information, see the commit log:
     http://github.com/sanko/alien-fltk2/commits/master
 
-$Ver: 0.06970018 $ from git $Rev: dee91f4 $
-$Date: 2010-02-13 16:55:35Z (Sat, 13 Feb 2010) $
+$Ver: 0.06970019 $ from git $Rev: 29adc40 $
+$Date: 2010-02-15 21:58:16Z (Mon, 15 Feb 2010) $
 $Url: http://github.com/sanko/alien-fltk2/raw/master/Changes $
