@@ -8,6 +8,8 @@ use Alien::FLTK2;
 use ExtUtils::CBuilder;
 $|++;
 my $CC = ExtUtils::CBuilder->new(quiet => 1);
+
+#my $CC = ExtUtils::CBuilder->new(config=>{cc => 'cl', ld => 'link'}, quiet => 1);
 my $AF = Alien::FLTK2->new();
 my ($FH, $SRC)
     = File::Temp->tempfile('alien_fltk_t0002_XXXX',

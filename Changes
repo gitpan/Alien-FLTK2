@@ -1,3 +1,8 @@
+Version 0.06970020 | 2010-03-29 05:13:06Z (Mon, 29 Mar 2010) | a8a2473
+
+    Resolved Issues/Bug Fixes:
+     * Under-tested MSVC fixes in the fltk2 lib
+
 Version 0.06970019 | 2010-02-15 21:58:16Z (Mon, 15 Feb 2010) | 29adc40
 
     Resolved Issues/Bug Fixes:
@@ -129,6 +134,6 @@ _ -.-. .... .- -. --. . ... _________________________________________
 For more information, see the commit log:
     http://github.com/sanko/alien-fltk2/commits/master
 
-$Ver: 0.06970019 $ from git $Rev: 29adc40 $
-$Date: 2010-02-15 21:58:16Z (Mon, 15 Feb 2010) $
+$Ver: 0.06970020 $ from git $Rev: a8a2473 $
+$Date: 2010-03-29 05:13:06Z (Mon, 29 Mar 2010) $
 $Url: http://github.com/sanko/alien-fltk2/raw/master/Changes $
