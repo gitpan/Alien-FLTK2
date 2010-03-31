@@ -3,8 +3,8 @@ package Alien::FLTK2;
     use strict;
     use warnings;
     use File::Spec::Functions qw[catdir rel2abs canonpath];
-    our $BASE = 0; our $SVN = 6970; our $DEV = -20; our $VERSION = sprintf('%d.%05d' . ($DEV ? (($DEV < 0 ? '' : '_') . '%03d') : ('')), $BASE, $SVN, abs $DEV);
-    sub _git_rev {'fd41e31'}
+    our $BASE = 0; our $SVN = 6970; our $DEV = -21; our $VERSION = sprintf('%d.%05d' . ($DEV ? (($DEV < 0 ? '' : '_') . '%03d') : ('')), $BASE, $SVN, abs $DEV);
+    sub _git_rev {'7f6c18b'}
 
     sub _snapshot_mirrors {
         return {

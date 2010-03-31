@@ -1,3 +1,9 @@
+Version 0.06970021 | 2010-03-29 05:13:06Z (Mon, 29 Mar 2010) | a8a2473
+
+    Resolved Issues/Bug Fixes:
+     * [7f6c18b] Font sizing on Win32 w/unicode
+           See http://www.cpantesters.org/cpan/report/7045261
+
 Version 0.06970020 | 2010-03-29 05:13:06Z (Mon, 29 Mar 2010) | a8a2473
 
     Resolved Issues/Bug Fixes:
@@ -134,6 +140,6 @@ _ -.-. .... .- -. --. . ... _________________________________________
 For more information, see the commit log:
     http://github.com/sanko/alien-fltk2/commits/master
 
-$Ver: 0.06970020 $ from git $Rev: a8a2473 $
+$Ver: 0.06970021 $ from git $Rev: a8a2473 $
 $Date: 2010-03-29 05:13:06Z (Mon, 29 Mar 2010) $
 $Url: http://github.com/sanko/alien-fltk2/raw/master/Changes $
