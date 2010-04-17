@@ -4,7 +4,7 @@ package inc::MBX::Alien::FLTK::Platform::Unix::Darwin;
     use warnings;
     use Carp qw[];
     use Config qw[%Config];
-    use lib '../../../../../../';
+    use lib '../../../../../..';
     use inc::MBX::Alien::FLTK::Utility qw[_o _a _rel _abs can_run];
     use inc::MBX::Alien::FLTK;
     use base 'inc::MBX::Alien::FLTK::Platform::Unix';
@@ -23,9 +23,10 @@ package inc::MBX::Alien::FLTK::Platform::Unix::Darwin;
             # We know that Carbon is deprecated on OS X 10.4. To avoid
             # hundreds of warnings we will temporarily disable 'deprecated'
             # warnings on OS X.
-            for my $type (qw[cxxflags cflags]) { }
-            $self->notes(  $type => ' -Wno-deprecated-declarations '
-                         . $self->notes($type));
+            for my $type (qw[cxxflags cflags]) {
+                $self->notes(  $type => ' -Wno-deprecated-declarations '
+                             . $self->notes($type));
+            }
         }
 
         # Starting with 10.6 (Snow Leopard), OS X does not support Carbon
