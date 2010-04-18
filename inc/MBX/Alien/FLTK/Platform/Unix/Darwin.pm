@@ -41,7 +41,9 @@ package inc::MBX::Alien::FLTK::Platform::Unix::Darwin;
                        cxxflags => $self->notes('cxxflags') . ' -arch i386 ');
         }
         $self->notes(GL => ' -framework AGL -framework OpenGL ');
+        $self->notes('define')->{'USE_X11'}          = 0;
         $self->notes('define')->{'USE_QUARTZ'}       = 1;    # Alpha
+        $self->notes('define')->{'__APPLE__'}        = 1;    # Alpha
         $self->notes('define')->{'__APPLE_QUARTZ__'} = 1;    # Alpha
         $self->notes('define')->{'__APPLE_COCOA__'}  = 1;    # Alpha
         return 1;
