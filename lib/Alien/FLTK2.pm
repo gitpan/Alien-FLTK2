@@ -3,8 +3,7 @@ package Alien::FLTK2;
     use strict;
     use warnings;
     use File::Spec::Functions qw[catdir rel2abs canonpath];
-    our $BASE = 0; our $SVN = 6970; our $DEV = -23; our $VERSION = sprintf('%d.%05d' . ($DEV ? (($DEV < 0 ? '' : '_') . '%03d') : ('')), $BASE, $SVN, abs $DEV);
-
+    our $BASE = 0; our $SVN = 6970; our $DEV = -24; our $VERSION = sprintf('%d.%05d' . ($DEV ? (($DEV < 0 ? '' : '_') . '%03d') : ('')), $BASE, $SVN, abs $DEV);
     sub _git_rev {'7f6c18b'}
 
     sub _snapshot_mirrors {
@@ -343,7 +342,7 @@ following procedure:
 http://github.com/sanko/alien-fltk/issues
 
 Please only report L<Alien::FLTK2|Alien::FLTK2> related bugs to this tracker.
-For L<FLTK|FLTK> issues, use http://github.com/sanko/fltk-perl/issues/
+For L<FLTK|FLTK> issues, use http://github.com/sanko/fltk-perl2/issues/
 
 =item * Commit Log
 
@@ -373,7 +372,7 @@ http://github.com/sanko/alien-fltk2/ and you are invited to fork it.
 
 =head2 Examples
 
-Please see the L<Synopsis|/"Synopsis"> and the files in the C</examples/>.
+Please see the L<Synopsis|Alien::FLTK2/"Synopsis"> and the files in the C</examples/>.
 
 =head2 Bugs
 
@@ -418,6 +417,6 @@ clarification, see http://creativecommons.org/licenses/by-sa/3.0/us/.
 L<Alien::FLTK2|Alien::FLTK2> is based in part on the work of the FLTK project.
 See http://www.fltk.org/.
 
-=for git $Id: FLTK2.pm b154909 2010-04-18 19:40:15Z sanko@cpan.org $
+=for git $Id: FLTK2.pm 978608d 2010-09-04 04:21:58Z sanko@cpan.org $
 
 =cut

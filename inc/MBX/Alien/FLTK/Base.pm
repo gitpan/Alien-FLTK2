@@ -39,11 +39,9 @@ package inc::MBX::Alien::FLTK::Base;
     sub compile {
         my ($self, $args) = @_;
         local $^W = 0;
-
-        #my $cbuilder = ExtUtils::CBuilder->new(config=>{cc => 'cl'});
         my $cbuilder = $self->cbuilder;
         local $cbuilder->{'quiet'} = 1;
-        my $code = 0;
+        local $cbuilder->{'config'}{'archlibexp'} = '---break---';
         if (!$args->{'source'}) {
             (my $FH, $args->{'source'}) = tempfile(
                                      undef, SUFFIX => '.cpp'    #, UNLINK => 1
@@ -56,8 +54,10 @@ package inc::MBX::Alien::FLTK::Base;
                          . "\n"
             );
             close $FH;
-            $code = 1;
+            $self->add_to_cleanup($args->{'source'});
         }
+        open(my ($OLDERR), ">&STDERR");
+        close *STDERR;
         my $obj = eval {
             $cbuilder->compile(
                   ($args->{'source'} !~ m[\.c$] ? ('C++' => 1) : ()),
@@ -72,8 +72,8 @@ package inc::MBX::Alien::FLTK::Base;
                   )
             );
         };
-
-        #unlink $args->{'source'} if $code;
+        open(*STDERR, '>&', $OLDERR)
+            || exit !print "Couldn't restore STDERR: $!\n";
         return $obj ? $obj : ();
     }
 
@@ -283,7 +283,7 @@ int main ( ) {
                 my $print = '';
                 for my $key (@defines) {
                     $print
-                        .= '#ifdef '
+                        .= '#ifdef ' 
                         . $key . "\n"
                         . '    printf("'
                         . $key
@@ -537,7 +537,7 @@ int main ( ) { return jpeg_destroy_decompress( ); return 0;}
         {    # Both | All platforms | Standard headers/functions
             my @headers = qw[dirent.h sys/ndir.h sys/dir.h ndir.h];
         HEADER: for my $header (@headers) {
-                printf 'Checking for %s that defines DIR... ', $header;
+                printf "Checking for %s that defines DIR...\n", $header;
                 my $exe = $self->assert_lib(
                                {headers => [$header], code => sprintf <<'' });
 #include <stdio.h>
@@ -551,7 +551,7 @@ int main ( ) {
 
                 my $define = uc 'HAVE_' . $header;
                 if ($exe) {
-                    print "yes ($header)\n";
+                    print "    yes ($header)\n";
                     $define =~ s|[/\.]|_|g;
                     $self->notes('define')->{$define} = 1;
 

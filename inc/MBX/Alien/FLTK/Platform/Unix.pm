@@ -25,7 +25,7 @@ package inc::MBX::Alien::FLTK::Platform::Unix;
         );
 
         # Asssumed true since this is *nix
-        $self->notes('define')->{'USE_X11'} = 0; # default
+        $self->notes('define')->{'USE_X11'} = 0;    # default
         $self->notes('define')->{'HAVE_SYS_NDIR_H'}
             = ($self->assert_lib({headers => ['sys/ndir.h']}) ? 1 : undef);
         $self->notes('define')->{'HAVE_SYS_DIR_H'}

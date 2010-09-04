@@ -1,0 +1,61 @@
+{
+   "abstract" : "Build and use the experimental C<2.0.x> branch Fast Light Toolkit",
+   "author" : [
+      "Sanko Robinson <sanko@cpan.org>"
+   ],
+   "dynamic_config" : 1,
+   "generated_by" : "Conversion, Software version 7.0",
+   "keywords" : [
+      "Alien",
+      "FLTK",
+      "Fast",
+      "Light",
+      "Toolkit",
+      "widget",
+      "FL",
+      "GUI",
+      "UI",
+      "window",
+      "2.0.x"
+   ],
+   "license" : [
+      "artistic_2"
+   ],
+   "meta-spec" : {
+      "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
+      "version" : "2"
+   },
+   "name" : "Alien-FLTK2",
+   "no_index" : {
+      "directory" : [
+         "t",
+         "example",
+         "inc",
+         "share"
+      ]
+   },
+   "provides" : {
+      "Alien::FLTK2" : {
+         "file" : "lib/Alien/FLTK2.pm",
+         "version" : "0.06970024"
+      }
+   },
+   "release_status" : "stable",
+   "resources" : {
+      "bugtracker" : {
+         "mailto" : "sanko@cpan.org",
+         "web" : "http://github.com/sanko/alien-fltk2/issues"
+      },
+      "homepage" : "http://sanko.github.com/fltk-perl/",
+      "license" : [
+         "http://www.perlfoundation.org/artistic_license_2_0"
+      ],
+      "repository" : {
+         "type" : "git",
+         "url" : "git://github.com/sanko/alien-fltk2.git",
+         "web" : "http://github.com/sanko/alien-fltk2"
+      },
+      "x_ChangeLog" : "http://github.com/sanko/alien-fltk2/commits"
+   },
+   "version" : "0.06970024"
+}
