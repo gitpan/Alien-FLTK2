@@ -72,11 +72,11 @@ void tick( void * v ) {
     repeat_timeout( 0.01, tick, v );
 }
 int main( int argc, char **argv ) {
-    window->end();            /* Showing the window causes the test to fail on
-    gl->show(argc, argv);    X11 w/o a display. Testing the creation of the
-    add_timeout( 0.01, tick, &gl );
-    wait(0.1);                   window and a widget should be enough.
-    gl->hide();           */
+    gl->end();                   /* Showing the window causes the test to fail
+    add_timeout( 0.01, tick, &gl ); on X11 w/o a display. Testing the creation
+    gl->show(argc, argv);           of the window and widget should be enough.
+    wait(0.1);                   */
+    gl->hide();
     return 0;
 }
 CPP
@@ -116,7 +116,7 @@ Creative Commons Attribution-Share Alike 3.0 License. See
 http://creativecommons.org/licenses/by-sa/3.0/us/legalcode.  For
 clarification, see http://creativecommons.org/licenses/by-sa/3.0/us/.
 
-=for git $Id: 0003_gl.t f221db0 2010-09-03 20:52:34Z sanko@cpan.org $
+=for git $Id: 0003_gl.t 4c1b0cc 2010-09-07 04:05:07Z sanko@cpan.org $
 
 =cut
 
@@ -218,6 +218,6 @@ Creative Commons Attribution-Share Alike 3.0 License. See
 http://creativecommons.org/licenses/by-sa/3.0/us/legalcode.  For
 clarification, see http://creativecommons.org/licenses/by-sa/3.0/us/.
 
-=for git $Id: 0003_gl.t f221db0 2010-09-03 20:52:34Z sanko@cpan.org $
+=for git $Id: 0003_gl.t 4c1b0cc 2010-09-07 04:05:07Z sanko@cpan.org $
 
 =cut
