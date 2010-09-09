@@ -73,7 +73,6 @@ package inc::MBX::Alien::FLTK::Platform::Windows::MSVC;
                     next;
                 };
                 if ($data =~ s[^(#\s*warning .+)$][//$1]mg) {
-                    warn $src;
                     printf
                         'Removing incompatible #warning pragmas from %s... ',
                         $src;
@@ -146,7 +145,7 @@ package inc::MBX::Alien::FLTK::Platform::Windows::MSVC;
         );
         for my $lib (keys %{$self->notes('libs_source')}) {
             $self->notes('libs_source')->{$lib}{'disabled'}++
-                if $lib =~ m[glut$]i;
+                if $lib =~ m[glut]i;
         }
         $self->notes(ldflags => $self->notes('ldflags')
             . ' ws2_32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib msimg32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib '

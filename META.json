@@ -1,5 +1,5 @@
 {
-   "abstract" : "Build and use the experimental C<2.0.x> branch Fast Light Toolkit",
+   "abstract" : "Build and use the experimental 2.0.x branch Fast Light Toolkit",
    "author" : [
       "Sanko Robinson <sanko@cpan.org>"
    ],
@@ -37,10 +37,10 @@
    "provides" : {
       "Alien::FLTK2" : {
          "file" : "lib/Alien/FLTK2.pm",
-         "version" : "0.06970025"
+         "version" : "0.07680_001"
       }
    },
-   "release_status" : "stable",
+   "release_status" : "testing",
    "resources" : {
       "bugtracker" : {
          "mailto" : "sanko@cpan.org",
@@ -57,5 +57,5 @@
       },
       "x_ChangeLog" : "http://github.com/sanko/alien-fltk2/commits"
    },
-   "version" : "0.06970025"
+   "version" : "0.07680_001"
 }

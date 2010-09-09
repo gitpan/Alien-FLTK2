@@ -41,7 +41,6 @@ package inc::MBX::Alien::FLTK::Base;
         local $^W = 0;
         my $cbuilder = $self->cbuilder;
         local $cbuilder->{'quiet'} = 1;
-        local $cbuilder->{'config'}{'archlibexp'} = '---break---';
         if (!$args->{'source'}) {
             (my $FH, $args->{'source'}) = tempfile(
                                      undef, SUFFIX => '.cpp'    #, UNLINK => 1
@@ -684,13 +683,17 @@ int main () {
         my ($self, $build) = @_;
         $self->quiet(1);
         $self->notes('libs' => []);
+        local $self->cbuilder->{'config'}{'archlibexp'} = '---break---';
         if (!chdir $self->base_dir()) {
             print 'Failed to cd to base directory';
             exit 0;
         }
         my $libs = $self->notes('libs_source');
-        for my $lib (sort { lc $a cmp lc $b } keys %$libs) {
-            next if $libs->{$lib}{'disabled'};
+        my @libs = sort { lc $a cmp lc $b }
+            grep { !$libs->{$_}{'disabled'} } keys %$libs;
+
+        #printf "The following libs will be built: %s\n", join ', ', @libs;
+        for my $lib (@libs) {
             print "Building $lib...\n";
             my $cwd = _abs(_cwd());
             if (!chdir $build->fltk_dir($libs->{$lib}{'directory'})) {
@@ -787,6 +790,7 @@ int main () {
         unshift @INC, (_path($self->base_dir, 'lib'));
         if (   (!$args{'no-git'})
             && (eval 'require ' . $self->module_name)
+            && ($self->module_name->can('_git_rev'))
             && ($self->module_name->_git_rev()))
         {   {
                 $args{'ext'} ||= [qw[tar.gz zip]];
@@ -867,21 +871,21 @@ int main () {
             require File::Fetch;
             $File::Fetch::TIMEOUT = $File::Fetch::TIMEOUT = 45;    # Be quick
             printf "Fetching SVN snapshot %d... ", $self->notes('svn');
-            my ($schemes, $exts, %mirrors)
+            my ($schemes, $exts, $mirrors)
                 = ($args{'scheme'}, $args{'ext'}, $self->_snapshot_mirrors());
             my ($attempt, $total)
                 = (
-                 0, scalar(@$schemes) * scalar(@$exts) * scalar(keys %mirrors)
+                0, scalar(@$schemes) * scalar(@$exts) * scalar(keys %$mirrors)
                 );
-            my $mirrors = [keys %mirrors];
+            my @mirrors = keys %$mirrors;
             {    # F-Y shuffle
-                my $i = @$mirrors;
+                my $i = @mirrors;
                 while (--$i) {
                     my $j = int rand($i + 1);
-                    @$mirrors[$i, $j] = @$mirrors[$j, $i];
+                    @mirrors[$i, $j] = @mirrors[$j, $i];
                 }
             }
-        SVN_MIRROR: for my $mirror (@$mirrors) {
+        SVN_MIRROR: for my $mirror (@mirrors) {
             EXT: for my $ext (@$exts) {
                 SCHEME: for my $scheme (@$schemes) {
                         printf "\n[%d/%d] Trying %s mirror based in %s... ",
@@ -890,7 +894,7 @@ int main () {
                             File::Fetch->new(
                               uri => sprintf
                                   '%s://%s/fltk/snapshots/fltk-%s-r%d.tar.%s',
-                              $scheme, $mirrors{$mirror},
+                              $scheme, $mirrors->{$mirror},
                               $self->notes('branch'),
                               $self->notes('svn'), $ext
                             );
@@ -915,7 +919,7 @@ int main () {
             if (!$archive) {    # bad news
                 my (@urls, $i);
                 for my $ext (@$exts) {
-                    for my $mirror (sort values %mirrors) {
+                    for my $mirror (sort values %$mirrors) {
                         for my $scheme (@$schemes) {
                             push @urls,
                                 sprintf
@@ -944,7 +948,6 @@ Please, use one of the following mirrors:
 Exiting...
 END
             }
-            $self->depends_on('verify_snapshot');
         }
         shift @INC;
         print "done.\n";
@@ -952,6 +955,7 @@ END
         $self->notes('snapshot_path' => $archive);
         $self->notes('snapshot_dir'  => $dir);       # Unused but good to know
              #$self->add_to_cleanup($dir);
+        $self->depends_on('verify_snapshot');
     }
 
     sub _snapshot_mirrors {
@@ -961,6 +965,7 @@ END
         $return
             = eval 'require '
             . $self->module_name
+            && $self->module_name->can('_snapshot_mirrors')
             ? $self->module_name->_snapshot_mirrors()
             : {
             'California, USA' => 'ftp.easysw.com/pub',
@@ -1030,7 +1035,7 @@ END
         local @INC = ('lib', @INC);
         unshift @INC, (_path($self->base_dir, 'lib'));
         eval 'require ' . $self->module_name;
-        my $key = $self->module_name->_git_rev() ? 'sanko-' : '';
+        my $key = $self->module_name->can('_git_rev') ? 'sanko-' : '';
         $self->depends_on('fetch_fltk');
         $args{'from'} ||= $self->notes('snapshot_path');
         $args{'to'}   ||= _rel(($self->notes('extract_dir')));
@@ -1038,7 +1043,7 @@ END
                && -d $args{'to'} . sprintf '/%sfltk-%s-%s',
                $key,
                $self->notes('branch'),
-               $key
+               $key && $self->module_name->can('_git_rev')
                ? $self->module_name->_git_rev()
                : 'r' . $self->notes('svn')
             )
@@ -1320,6 +1325,11 @@ END
             printf 'Looking for %s... ', $file;
             $dir = join ' ', ($dir || ''), $Config{'incpath'},
                 $Config{'usrinc'};
+            {    # work around bug in recent Strawberry perl
+                my @pth = split ' ', $Config{'libpth'};
+                s[lib$][include] for @pth;
+                $dir .= join ' ', @pth;
+            }
             $dir =~ s|\s+| |g;
             for my $test (split m[\s+]m, $dir) {
                 if (-e _path($test . '/' . $file)) {
