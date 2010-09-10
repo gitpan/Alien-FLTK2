@@ -1,4 +1,4 @@
-Version 0.XXXXX | In the not too distant future | 4c1b0cc
+Version 0.XXXXX | In the not too distant future | 1a7dcc2
 
     Resolved Issues/Bug Fixes:
      * Correcting c+p bug in gl test
@@ -8,6 +8,8 @@ Version 0.XXXXX | In the not too distant future | 4c1b0cc
           headers under ...strawberry\c\i686-w64-mingw32\include\ without
           adding the directory to $Config{incpath} or even $Config{userinc}.
           This was causing such systems to miss GL during configure.
+     * Build against fltk2's mainline SVN revision 7680
+     * Improved (I hope) library archiver search for MinGW-based systems
 
 Version 0.06970024 | 2010-09-04 04:21:58Z (Sat, 04 Sep 2010) | 978608d
 
@@ -177,6 +179,6 @@ _ -.-. .... .- -. --. . ... _________________________________________
 For more information, see the commit log:
     http://github.com/sanko/alien-fltk2/commits
 
-$Ver: 0.07680_001 $ from git $Rev: 4c1b0cc $
-$Date: 2010-09-07 04:05:07Z (Tue, 07 Sep 2010) $
-$Url: HASH(0x11e6684)/raw/master/Changes $
+$Ver: 0.07680_002 $ from git $Rev: 1a7dcc2 $
+$Date: 2010-09-09 03:59:14Z (Thu, 09 Sep 2010) $
+$Url: HASH(0x1200ec4)/raw/master/Changes $

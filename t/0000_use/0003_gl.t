@@ -116,6 +116,6 @@ Creative Commons Attribution-Share Alike 3.0 License. See
 http://creativecommons.org/licenses/by-sa/3.0/us/legalcode.  For
 clarification, see http://creativecommons.org/licenses/by-sa/3.0/us/.
 
-=for git $Id: 0003_gl.t 4c1b0cc 2010-09-07 04:05:07Z sanko@cpan.org $
+=for git $Id: 0003_gl.t 4a3614f 2010-09-09 03:56:00Z sanko@cpan.org $
 
 =cut

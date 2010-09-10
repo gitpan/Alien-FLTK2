@@ -175,12 +175,16 @@ package inc::MBX::Alien::FLTK::Base;
         $self->notes('library_paths' => {});
         {
             print 'Locating library archiver... ';
-            my $ar = can_run('ar');
-            if (!$ar) {
+                    open(my ($OLDOUT), ">&STDOUT");
+            close *STDOUT;
+            my ($ar) = grep { run("$_ V") } can_run($Config{'ar'});
+                    open(*STDOUT, '>&', $OLDOUT)
+            || exit !print "Couldn't restore STDOUT: $!\n";
+             if (!$ar) {
                 print "Could not find the library archiver, aborting.\n";
                 exit 0;
             }
-            $ar .= ' cr' . (can_run('ranlib') ? 's' : '');
+            $ar .= ' cr' . (can_run($Config{'ranlib'}) ? 's' : '');
             $self->notes(AR => $ar);
             print "$ar\n";
         }
@@ -282,7 +286,7 @@ int main ( ) {
                 my $print = '';
                 for my $key (@defines) {
                     $print
-                        .= '#ifdef ' 
+                        .= '#ifdef '
                         . $key . "\n"
                         . '    printf("'
                         . $key
