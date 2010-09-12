@@ -1,4 +1,4 @@
-Version 0.XXXXX | In the not too distant future | 1a7dcc2
+Version 0.07680002 | 2010-09-12 03:22:02Z (Sun, 12 Sep 2010) | 68973d4
 
     Resolved Issues/Bug Fixes:
      * Correcting c+p bug in gl test
@@ -179,6 +179,6 @@ _ -.-. .... .- -. --. . ... _________________________________________
 For more information, see the commit log:
     http://github.com/sanko/alien-fltk2/commits
 
-$Ver: 0.07680_002 $ from git $Rev: 1a7dcc2 $
+$Ver: 0.07680002 $ from git $Rev: 1a7dcc2 $
 $Date: 2010-09-09 03:59:14Z (Thu, 09 Sep 2010) $
-$Url: HASH(0x1200ec4)/raw/master/Changes $
+$Url: HASH(0x1234aa4)/raw/master/Changes $

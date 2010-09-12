@@ -37,10 +37,10 @@
    "provides" : {
       "Alien::FLTK2" : {
          "file" : "lib/Alien/FLTK2.pm",
-         "version" : "0.07680_002"
+         "version" : "0.07680002"
       }
    },
-   "release_status" : "testing",
+   "release_status" : "stable",
    "resources" : {
       "bugtracker" : {
          "mailto" : "sanko@cpan.org",
@@ -57,5 +57,5 @@
       },
       "x_ChangeLog" : "http://github.com/sanko/alien-fltk2/commits"
    },
-   "version" : "0.07680_002"
+   "version" : "0.07680002"
 }

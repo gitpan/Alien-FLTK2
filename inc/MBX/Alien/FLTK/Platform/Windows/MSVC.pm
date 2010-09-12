@@ -35,8 +35,8 @@ package inc::MBX::Alien::FLTK::Platform::Windows::MSVC;
                                        : ' -lfltk2_images '
                      )
         );
-        $self->notes('include_dirs'  => {});
-        $self->notes('library_paths' => {});
+        $self->notes('include_dirs' => {});
+        $self->notes('lib_dirs'     => {});
 
         # Not all of FLTK is compatible/applicable with MSVC...
         my @remove = qw[WidgetAssociation.cxx];
@@ -189,6 +189,6 @@ Creative Commons Attribution-Share Alike 3.0 License. See
 http://creativecommons.org/licenses/by-sa/3.0/us/legalcode.  For
 clarification, see http://creativecommons.org/licenses/by-sa/3.0/us/.
 
-=for git $Id: CygWin.pm dc42150 2010-01-17 03:51:57Z sanko@cpan.org $
+=for git $Id$
 
 =cut

@@ -261,6 +261,6 @@ Creative Commons Attribution-Share Alike 3.0 License. See
 http://creativecommons.org/licenses/by-sa/3.0/us/legalcode.  For
 clarification, see http://creativecommons.org/licenses/by-sa/3.0/us/.
 
-=for git $Id: Build.PL c04ed71 2010-09-03 20:47:32Z sanko@cpan.org $
+=for git $Id: Build.PL 68973d4 2010-09-12 03:22:02Z sanko@cpan.org $
 
 =cut
