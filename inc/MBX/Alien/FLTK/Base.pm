@@ -174,21 +174,7 @@ package inc::MBX::Alien::FLTK::Base;
         );
         $self->notes('include_dirs' => {});
         $self->notes('lib_dirs'     => {});
-        {
-            print 'Locating library archiver... ';
-            open(my ($OLDOUT), ">&STDOUT");
-            close *STDOUT;
-            my ($ar) = grep { run("$_ V") } can_run($Config{'ar'});
-            open(*STDOUT, '>&', $OLDOUT)
-                || exit !print "Couldn't restore STDOUT: $!\n";
-            if (!$ar) {
-                print "Could not find the library archiver, aborting.\n";
-                exit 0;
-            }
-            $ar .= ' cr' . (can_run($Config{'ranlib'}) ? 's' : '');
-            $self->notes(AR => $ar);
-            print "$ar\n";
-        }
+        $self->_configure_ar;
         {
             my %sizeof;
             for my $type (qw[short int long]) {
@@ -682,6 +668,23 @@ int main () {
             }
         }
         return 1;
+    }
+
+    sub _configure_ar {
+        my $s = shift;
+        print 'Locating library archiver... ';
+        open(my ($OLDOUT), ">&STDOUT");
+        close *STDOUT;
+        my ($ar) = grep { run("$_ V") } can_run($Config{'ar'});
+        open(*STDOUT, '>&', $OLDOUT)
+            || exit !print "Couldn't restore STDOUT: $!\n";
+        if (!$ar) {
+            print "Could not find the library archiver, aborting.\n";
+            exit 0;
+        }
+        $ar .= ' cr' . (can_run($Config{'ranlib'}) ? 's' : '');
+        $s->notes(AR => $ar);
+        print "$ar\n";
     }
 
     sub build_fltk {
