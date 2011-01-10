@@ -56,7 +56,8 @@ my $mb = $class->new(
                         : ('ExtUtils::MM' => 0)
                        ),
     },
-    add_to_cleanup => [
+    configure_requires => {'Module::Build' => 0.36},
+    add_to_cleanup     => [
                qw[Alien-FLTK2-* src/* share/*],
                map {"*$_"} ('.' . $Config{'so'}, $Config{'_o'}, $Config{'_a'})
     ],
@@ -261,6 +262,6 @@ Creative Commons Attribution-Share Alike 3.0 License. See
 http://creativecommons.org/licenses/by-sa/3.0/us/legalcode.  For
 clarification, see http://creativecommons.org/licenses/by-sa/3.0/us/.
 
-=for git $Id: Build.PL 68973d4 2010-09-12 03:22:02Z sanko@cpan.org $
+=for git $Id: Build.PL 0546209 2011-01-10 04:59:34Z sanko@cpan.org $
 
 =cut

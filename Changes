@@ -1,3 +1,14 @@
+Version 0.07725 | 2011-01-10 04:59:34Z (Mon, 10 Jan 2011) | 0546209
+
+    Resolved Issues/Bug Fixes:
+     * Disable (broken) async fh select on win32
+
+    Upstream Changes
+     * [r7723] Fixed STR #2431. Clipping region fix for fltk::TiledImage
+
+    Notes:
+     * Simple patch system added to build cycle
+
 Version 0.07704001 | 2010-09-25 14:04:33Z (Sat, 25 Sep 2010) | c262431
 
     Resolved Issues/Bug Fixes:
@@ -194,6 +205,6 @@ _ -.-. .... .- -. --. . ... _________________________________________
 For more information, see the commit log:
     http://github.com/sanko/alien-fltk2/commits
 
-$Ver: 0.07704001 $ from git $Rev: c262431 $
-$Date: 2010-09-25 14:04:33Z (Sat, 25 Sep 2010) $
-$Url: HASH(0x12237d4)/raw/master/Changes $
+$Ver: 0.07725 $ from git $Rev: 0546209 $
+$Date: 2011-01-10 04:59:34Z (Mon, 10 Jan 2011) $
+$Url: HASH(0xf5fc6c)/raw/master/Changes $
