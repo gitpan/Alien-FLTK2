@@ -1,3 +1,8 @@
+Version 0.08323001 | 2011-02-02 23:58:04Z (Wed, 02 Feb 2011) | 8088b1a
+
+    Resolved Issues/Bug Fixes:
+     * Use YAML::Tiny directly when creating config during build
+
 Version 0.08323 | 2011-02-02 21:25:09Z (Wed, 02 Feb 2011) | 7285db6
 
     Upstream Changes:
@@ -229,6 +234,6 @@ _ -.-. .... .- -. --. . ... _________________________________________
 For more information, see the commit log:
     http://github.com/sanko/alien-fltk2/commits
 
-$Ver: 0.08323 $ from git $Rev: 7285db6 $
-$Date: 2011-02-02 21:25:09Z (Wed, 02 Feb 2011) $
-$Url: HASH(0x13cba7c)/raw/master/Changes $
+$Ver: 0.08323001 $ from git $Rev: 8088b1a $
+$Date: 2011-02-02 23:58:04Z (Wed, 02 Feb 2011) $
+$Url: HASH(0x13ea434)/raw/master/Changes $

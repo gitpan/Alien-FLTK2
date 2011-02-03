@@ -41,9 +41,9 @@ my $mb = $class->new(
                        'File::Temp'         => 0,
                        'TAP::Harness'       => 3.18,
                        'Test::More'         => 0.88,
-                       'Module::Build'      => 0.36,
+                       'Module::Build'      => 0.3624,
                        perl                 => 5.008000,
-                       'YAML::Tiny'         => 0,
+                       'YAML::Tiny'         => 1.46,
                        ($is_developer
                         ? ('CPAN::Meta::Converter' => 0,
                            'CPAN::Meta::Validator' => 0,
@@ -56,7 +56,7 @@ my $mb = $class->new(
                         : ('ExtUtils::MM' => 0)
                        ),
     },
-    configure_requires => {'Module::Build' => 0.36},
+    configure_requires => {'Module::Build' => 0.3624, 'YAML::Tiny' => 1.46},
     add_to_cleanup     => [
                qw[Alien-FLTK2-* src/* share/*],
                map {"*$_"} ('.' . $Config{'so'}, $Config{'_o'}, $Config{'_a'})
@@ -262,6 +262,6 @@ Creative Commons Attribution-Share Alike 3.0 License. See
 http://creativecommons.org/licenses/by-sa/3.0/us/legalcode.  For
 clarification, see http://creativecommons.org/licenses/by-sa/3.0/us/.
 
-=for git $Id: Build.PL 0546209 2011-01-10 04:59:34Z sanko@cpan.org $
+=for git $Id: Build.PL 8088b1a 2011-02-02 23:58:04Z sanko@cpan.org $
 
 =cut
