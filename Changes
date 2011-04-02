@@ -1,3 +1,18 @@
+Version 0.08550 | 2011-04-02 02:11:40Z (Sat, 02 Apr 2011) | ef7ae5b
+
+    Upstream Changes:
+     * [r8385] FileChooser now allows users to type absolute paths
+     * [r8369] Improves utf8 in fltk::fltk_fopen()
+     * [r8418] Upgrade libjpeg to latest version (as of 2011-02-13)
+     * [r8416] Upgrade zlib to the latest version (as of 2010-12-02)
+     * [r8414] Finishes upgrade of libpng
+     * [r8465] FileIcon now loads some defaults under Gnome
+
+    Notes:
+     * Mirrored fltk2 snapshots renamed from fltk-2.0.x-rXXXX.tar.ext to
+         fltk-2.0.x-alpha-rXXXX.tar.ext to make the unstable nature even more
+         evident
+
 Version 0.08365 | 2011-02-08 03:43:36Z (Tue, 08 Feb 2011) | ec4e842
 
     Upstream Changes:
@@ -239,6 +254,6 @@ _ -.-. .... .- -. --. . ... _________________________________________
 For more information, see the commit log:
     http://github.com/sanko/alien-fltk2/commits
 
-$Ver: 0.08365 $ from git $Rev: ec4e842 $
-$Date: 2011-02-08 03:43:36Z (Tue, 08 Feb 2011) $
-$Url: HASH(0xf92df4)/raw/master/Changes $
+$Ver: 0.08550 $ from git $Rev: ef7ae5b $
+$Date: 2011-04-02 02:11:40Z (Sat, 02 Apr 2011) $
+$Url: git://github.com/sanko/alien-fltk2.git/raw/master/Changes $

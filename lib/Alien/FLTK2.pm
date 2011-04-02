@@ -3,14 +3,13 @@ package Alien::FLTK2;
     use strict;
     use warnings;
     use File::Spec::Functions qw[catdir rel2abs canonpath];
-    our $BASE = 0; our $SVN = 8365; our $DEV = 0; our $VERSION = sprintf('%d.%05d' . ($DEV ? (($DEV < 0 ? '' : '_') . '%03d') : ('')), $BASE, $SVN, abs $DEV);
+    our $BASE = 0; our $SVN = 8550; our $DEV = 0; our $VERSION = sprintf('%d.%05d' . ($DEV ? (($DEV < 0 ? '' : '_') . '%03d') : ('')), $BASE, $SVN, abs $DEV);
 
     sub _md5 {
-        return {bz2 => 'a4a78694b8fc0e602cbc1c2a44267847',
-                gz  => 'f2c1144be28dadb0d2ef427f3392c4b5'
+        return {bz2 => 'b49429118f3b79b733cbddcf4cad67d5',
+                gz  => 'acf3e1024310bbefcd4f1bb7181222e1'
         };
     }
-
     sub _unique_file { return 'src/Widget.cxx' }
 
     sub new {
@@ -405,6 +404,6 @@ clarification, see http://creativecommons.org/licenses/by-sa/3.0/us/.
 L<Alien::FLTK2|Alien::FLTK2> is based in part on the work of the FLTK project.
 See http://www.fltk.org/.
 
-=for git $Id: FLTK2.pm ec4e842 2011-02-08 03:43:36Z sanko@cpan.org $
+=for git $Id: FLTK2.pm ef7ae5b 2011-04-02 02:11:40Z sanko@cpan.org $
 
 =cut
