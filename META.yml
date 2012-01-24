@@ -1,5 +1,5 @@
 ---
-abstract: 'Build and use the experimental 2.0.x branch Fast Light Toolkit'
+abstract: Build and use the experimental 2.0.x branch Fast Light Toolkit
 author:
   - 'Sanko Robinson <sanko@cpan.org>'
 build_requires:
@@ -32,7 +32,7 @@ configure_requires:
   Module::Build: 0.3624
   YAML::Tiny: 1.46
 dynamic_config: 1
-generated_by: 'Module::Build version 0.38, CPAN::Meta::Converter version 2.110580'
+generated_by: 'Module::Build version 0.38, CPAN::Meta::Converter version 2.112621'
 keywords:
   - Alien
   - FLTK
@@ -59,7 +59,7 @@ no_index:
 provides:
   Alien::FLTK2:
     file: lib/Alien/FLTK2.pm
-    version: 0.08550
+    version: 0.09204
 requires:
   File::ShareDir: 1.00
   File::Spec::Functions: 0
@@ -67,7 +67,7 @@ requires:
 resources:
   bugtracker: http://github.com/sanko/alien-fltk2/issues
   homepage: http://sanko.github.com/fltk-perl/
-  license: http://opensource.org/licenses/artistic-license-2.0.php
+  license: http://www.perlfoundation.org/artistic_license_2_0
   repository: git://github.com/sanko/alien-fltk2.git
   x_ChangeLog: http://github.com/sanko/alien-fltk2/commits
-version: 0.08550
+version: 0.09204

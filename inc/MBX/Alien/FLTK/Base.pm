@@ -22,7 +22,7 @@ package inc::MBX::Alien::FLTK::Base;
     sub archive {
         my ($self, $args) = @_;
         my $arch = $args->{'output'};
-        my @cmd = ($self->notes('AR'), $arch, @{$args->{'objects'}});
+        my @cmd = ($self->notes('AR'), $arch,  @{$args->{'objects'}});
         print STDERR "@cmd\n" if !$self->quiet;
         return run(@cmd) ? $arch : ();
     }
@@ -275,7 +275,7 @@ int main ( ) {
                 my $print = '';
                 for my $key (@defines) {
                     $print
-                        .= '#ifdef ' 
+                        .= '#ifdef '
                         . $key . "\n"
                         . '    printf("'
                         . $key

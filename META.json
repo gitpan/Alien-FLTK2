@@ -4,7 +4,7 @@
       "Sanko Robinson <sanko@cpan.org>"
    ],
    "dynamic_config" : 1,
-   "generated_by" : "Module::Build version 0.38, CPAN::Meta::Converter version 2.110580",
+   "generated_by" : "Module::Build version 0.38, CPAN::Meta::Converter version 2.112621",
    "keywords" : [
       "Alien",
       "FLTK",
@@ -81,7 +81,7 @@
    "provides" : {
       "Alien::FLTK2" : {
          "file" : "lib/Alien/FLTK2.pm",
-         "version" : "0.08550"
+         "version" : "0.09204"
       }
    },
    "release_status" : "stable",
@@ -91,13 +91,12 @@
       },
       "homepage" : "http://sanko.github.com/fltk-perl/",
       "license" : [
-         "http://opensource.org/licenses/artistic-license-2.0.php"
+         "http://www.perlfoundation.org/artistic_license_2_0"
       ],
       "repository" : {
-         "type" : "git",
          "url" : "git://github.com/sanko/alien-fltk2.git"
       },
       "x_ChangeLog" : "http://github.com/sanko/alien-fltk2/commits"
    },
-   "version" : "0.08550"
+   "version" : "0.09204"
 }
