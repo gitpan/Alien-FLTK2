@@ -4,7 +4,7 @@
       "Sanko Robinson <sanko@cpan.org>"
    ],
    "dynamic_config" : 1,
-   "generated_by" : "Module::Build version 0.38, CPAN::Meta::Converter version 2.112621",
+   "generated_by" : "Module::Build version 0.4001, CPAN::Meta::Converter version 2.120921",
    "keywords" : [
       "Alien",
       "FLTK",
@@ -37,30 +37,29 @@
    "prereqs" : {
       "build" : {
          "requires" : {
-            "Archive::Extract" : 0,
-            "CPAN::Meta::Converter" : 0,
-            "CPAN::Meta::Validator" : 0,
-            "Carp" : 0,
-            "Config" : 0,
-            "Cwd" : 0,
-            "Digest::MD5" : 0,
+            "Archive::Extract" : "0",
+            "CPAN::Meta::Converter" : "0",
+            "CPAN::Meta::Validator" : "0",
+            "Carp" : "0",
+            "Config" : "0",
+            "Cwd" : "0",
+            "Digest::MD5" : "0",
             "ExtUtils::CBuilder" : "0.27",
-            "ExtUtils::MM" : 0,
-            "File::Basename" : 0,
-            "File::Fetch" : 0,
-            "File::Find" : 0,
-            "File::Find::Rule" : 0,
+            "File::Basename" : "0",
+            "File::Fetch" : "0",
+            "File::Find" : "0",
+            "File::Find::Rule" : "0",
             "File::Path" : "2.07",
-            "File::ShareDir" : 0,
-            "File::Spec" : 0,
-            "File::Temp" : 0,
-            "JSON" : 0,
-            "Module::Build" : "0.3624",
-            "Perl::Tidy" : 0,
+            "File::ShareDir" : "0",
+            "File::Spec" : "0",
+            "File::Temp" : "0",
+            "JSON" : "0",
+            "Module::Build" : "0.4",
+            "Perl::Tidy" : "0",
             "TAP::Harness" : "3.18",
             "Test::More" : "0.88",
-            "YAML::Tiny" : "1.46",
-            "base" : 0,
+            "YAML::Tiny" : "0",
+            "base" : "0",
             "perl" : "5.008"
          }
       },
@@ -73,15 +72,15 @@
       "runtime" : {
          "requires" : {
             "File::ShareDir" : "1.00",
-            "File::Spec::Functions" : 0,
-            "YAML::Tiny" : 0
+            "File::Spec::Functions" : "0",
+            "YAML::Tiny" : "0"
          }
       }
    },
    "provides" : {
       "Alien::FLTK2" : {
          "file" : "lib/Alien/FLTK2.pm",
-         "version" : "0.09204"
+         "version" : "0.09296"
       }
    },
    "release_status" : "stable",
@@ -98,5 +97,5 @@
       },
       "x_ChangeLog" : "http://github.com/sanko/alien-fltk2/commits"
    },
-   "version" : "0.09204"
+   "version" : "0.09296"
 }

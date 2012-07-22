@@ -1,4 +1,10 @@
-Version 0.09204 | 2012-01-24 17:46:38Z (Tue, 24 Jan 2012) | df17165
+Version 0.09296 | 2012-01-24 17:46:38Z (Tue, 24 Jan 2012) | df17165
+
+    Upstream Changes:
+     * [r9296] Fix inconsistent events sent when pressing and releasing
+         multiple keys on X11
+
+Version 0.09204 | 2011-04-02 02:11:40Z (Sat, 02 Apr 2011) | ef7ae5b
 
     Upstream Changes:
      * [r8638] New built-in XP theme
@@ -260,6 +266,6 @@ _ -.-. .... .- -. --. . ... _________________________________________
 For more information, see the commit log:
     http://github.com/sanko/alien-fltk2/commits
 
-$Ver: 0.09204 $ from git $Rev: df17165 $
+$Ver: 0.09296 $ from git $Rev: df17165 $
 $Date: 2012-01-24 17:46:38Z (Tue, 24 Jan 2012) $
 $Url: git://github.com/sanko/alien-fltk2.git/raw/master/Changes $
